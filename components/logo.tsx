@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import React from 'react';
-import logo from "@/assets/university.png"
+import logo from "@/public/assets/images/university.png"
 import { cn } from '@/lib/utils';
 
 const Logo = ({className = ""}) => {

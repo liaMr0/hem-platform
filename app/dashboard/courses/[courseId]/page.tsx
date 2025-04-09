@@ -18,32 +18,32 @@ import { SubTitleForm } from "./_components/subtitle-form";
 import { replaceMongoIdInArray } from "@/lib/convertData";
 import { ObjectId } from "mongodb";
 import { getAllQuizSets } from "@/queries/quizzes";
+import { FileUploadForm } from "./_components/file-upload";
  
 const EditCourse = async ({ params: {courseId} }:any) => {
  
   const course = await getCourseDetails(courseId);
 
+  // Sanitize function for handle ObjectID and Buffer
+  function sanitizeData(data: any) {
+    return JSON.parse(
+      JSON.stringify(data, (key, value) => {
+        if (value instanceof ObjectId) {
+          return value.toString();
+        }
+        if (Buffer.isBuffer(value)) {
+          return value.toString("base64");
+        }
+        return value;
+      })
+    );
+  }
 
- // console.log(mappedCategories);
+  const rawmodules = await replaceMongoIdInArray(course?.modules).sort((a:any,b:any) => a.order - b.order);
+  const modules = sanitizeData(rawmodules);
 
- // Sanitize fucntion for handle ObjectID and Buffer
- function sanitizeData(data: any) {
-  return JSON.parse(
-    JSON.stringify(data, (key, value) => {
-      if (value instanceof ObjectId) {
-        return value.toString();
-      }
-      if (Buffer.isBuffer(value)) {
-        return value.toString("base64");
-      }
-      return value;
-    })
-  );
-}
-
- const rawmodules = await replaceMongoIdInArray(course?.modules).sort((a:any,b:any) => a.order - b.order);
-
- const modules = sanitizeData(rawmodules);
+  // Sanitizar los documentos también
+  const documents = course?.documents ? sanitizeData(course.documents) : [];
 
   const allQuizSets = await getAllQuizSets(true);
   let mappedQuizSet = [];
@@ -56,16 +56,13 @@ const EditCourse = async ({ params: {courseId} }:any) => {
     })
   }
 
-  //console.log(mappedQuizSet);
- 
-
   return (
     <> 
     {
-     !course.active &&  <AlertBanner
-     label="This course is unpublished. It will not be visible in the course."
-     variant="warning"
-   />
+      !course.active && <AlertBanner
+        label="This course is unpublished. It will not be visible in the course."
+        variant="warning"
+      />
     }
       
       <div className="p-6">
@@ -93,7 +90,15 @@ const EditCourse = async ({ params: {courseId} }:any) => {
             <DescriptionForm initialData={{description: course?.description }} courseId={courseId} />
 
             <ImageForm initialData={{imageUrl: `/assets/images/courses/${course?.thumbnail}`}} courseId={courseId} />
-           
+            
+            {/* Componente actualizado para subida de múltiples archivos */}
+            <FileUploadForm 
+              initialData={{
+                documents: documents
+              }} 
+              courseId={courseId} 
+            />
+            
             <QuizSetForm initialData={{ quizSetId: course?.quizSet?._id.toString() }} courseId={courseId} options={mappedQuizSet} />
           </div>
           <div className="space-y-6">

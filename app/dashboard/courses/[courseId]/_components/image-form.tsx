@@ -8,7 +8,7 @@ import Image from "next/image";
 import { toast } from "sonner";
 import * as z from "zod";
  
-import { UploadDropzone } from "@/components/file-upload";
+import { UploadDropzone } from "@/components/image-upload";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 

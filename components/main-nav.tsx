@@ -38,10 +38,10 @@ const MainNav = ({items,children}) => {
 
     return (
 <>
-<div className='flex gap-6 lg:gap-10'>
-    <Link href="/">
+<div className='flex pl-3.5 gap-6 lg:gap-10'>
+    
         <Logo/>
-    </Link>
+    
     {
         items?.length ? (
             <nav className='hidden gap-6 lg:flex'>
@@ -66,7 +66,7 @@ const MainNav = ({items,children}) => {
      
 </div>
 
-    <nav className='flex items-center gap-3'>
+    <nav className='flex items-center gap-3 pr-8'>
         
         {
             !loginSession && (

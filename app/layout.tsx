@@ -34,7 +34,7 @@ export default async function RootLayout({
       <body 
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-       <ThemeProvider  attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+       <ThemeProvider  attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {children}
         </ThemeProvider>
         <Toaster richColors position="top-center" />

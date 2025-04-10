@@ -30,7 +30,7 @@ const MobileNav = ({items,children}) => {
             <Link
             key={index}
             href={item.disable ? "#" : item.href}
-            className={cn("flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline",
+            className={cn("flex w-full items-center rounded-md p-2 text-sm font-medium ",
                 item.disable && "cursor-not-allowed opacity-60"
             )}
             >

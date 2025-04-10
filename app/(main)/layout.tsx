@@ -6,20 +6,16 @@ import { Heading1 } from 'lucide-react';
 
 const navLinks = [
     { 
-      title: "Features",
+      title: "Características",
       href: "/features",
     },
     { 
-        title: "Pricing",
-        href: "/pricing",
+        title: "Recursos",
+        href: "/resources",
     },
     { 
-        title: "Blog",
-        href: "/blog",
-    },
-    { 
-        title: "Documentation",
-        href: "/documentation",
+        title: "Testimonios",
+        href: "/testimonials",
     }, 
     
   ];

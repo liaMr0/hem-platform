@@ -36,7 +36,7 @@ async function EnrolledCourses() {
 				</>
 
 			) : (
-				<p className="font-bold text-red-700">No Enrollments found!</p>
+				<p className="font-bold text-red-700">No se encontraron cursos matriculados</p>
 			)
 		}
 			

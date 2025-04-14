@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 import React from "react";
 
 const menu = [
-	{ label: "Profile", href: "/account" },
-	{ label: "Enrolled Courses", href: "/account/enrolled-courses" },
+	{ label: "Perfil", href: "/account" },
+	{ label: "Cursos matriculados", href: "/account/enrolled-courses" },
 ];
 
 function Menu() {
@@ -28,7 +28,7 @@ function Menu() {
 				<Link
 					href="#" onClick={() => {signOut()}}
 					className="navbar-link text-slate-400 flex items-center py-2 rounded">
-					<h6 className="mb-0 font-semibold">Sign Out</h6>
+					<h6 className="mb-0 font-semibold">Cerrar sesión</h6>
 				</Link>
 			</li> 
 		</ul>

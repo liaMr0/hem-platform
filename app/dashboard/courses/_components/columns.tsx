@@ -23,7 +23,7 @@ export const columns = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Title <ArrowUpDown className="ml-2 h-4 w-4" />
+          Título <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -37,7 +37,7 @@ export const columns = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Published <ArrowUpDown className="ml-2 h-4 w-4" />
+          Publicados <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -46,7 +46,7 @@ export const columns = [
 
       return (
         <Badge className={cn("bg-gray-500", active && "bg-green-600")}>
-          {active ? "Published" : "Unpublished"}
+          {active ? "Publicado" : "No publicado"}
         </Badge>
       );
     },
@@ -67,19 +67,19 @@ export const columns = [
             <Link href={`/dashboard/courses/${id}`}>
               <DropdownMenuItem className="cursor-pointer">
                 <Pencil className="h-4 w-4 mr-2" />
-                Edit
+                Editar
               </DropdownMenuItem>
             </Link>
             <Link href={`/dashboard/courses/${id}/enrollments`}>
               <DropdownMenuItem className="cursor-pointer">
                 <GraduationCap className="h-4 w-4 mr-2" />
-                View Enrollments
+                Ver matrículas
               </DropdownMenuItem>
             </Link>
             <Link href={`/dashboard/courses/${id}/reviews`}>
               <DropdownMenuItem className="cursor-pointer">
                 <Star className="h-4 w-4 mr-2 fill-primary" />
-                View Reviews
+                Ver reseñas
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>

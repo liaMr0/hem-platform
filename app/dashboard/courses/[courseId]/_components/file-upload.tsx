@@ -182,19 +182,19 @@ export const FileUploadForm = ({ initialData, courseId }) => {
   return (
     <div className="mt-6 border bg-gray-50 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
-        Course Documents
+        Documentos del curso
         <Button variant="ghost" onClick={toggleEdit}>
           {isEditing && "Cancel"}
           {!isEditing && existingFiles.length === 0 && (
             <>
               <PlusCircle className="h-4 w-4 mr-2" />
-              Add documents
+             Agregar Documentos
             </>
           )}
           {!isEditing && existingFiles.length > 0 && (
             <>
               <Pencil className="h-4 w-4 mr-2" />
-              Change documents
+              Cambiar documentos
             </>
           )}
         </Button>
@@ -297,7 +297,7 @@ export const FileUploadForm = ({ initialData, courseId }) => {
               disabled={selectedFiles.length === 0 || isPending}
               onClick={handleSave}
             >
-              {isPending ? "Guardando..." : "Save"}
+              {isPending ? "Guardando..." : "Guardar"}
             </Button>
           </div>
         </div>

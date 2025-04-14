@@ -57,11 +57,11 @@ export const Navbar = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 mt-4">
           <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/account')}>
-            Profile
+            Perfil
           </DropdownMenuItem>
 
           <DropdownMenuItem className="cursor-pointer" onClick={() => signOut()}>
-            Logout
+            Cerrar sesión
           </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

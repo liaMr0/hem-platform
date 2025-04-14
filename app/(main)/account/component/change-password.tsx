@@ -41,46 +41,46 @@ const ChangePassword = ({email}:any) => {
     return (
         <div>
 <h5 className="text-lg font-semibold mb-4">
-    Change password :
+    Cambiar contraseña:
 </h5>
 <form onSubmit={doPasswordChange}>
     <div className="grid grid-cols-1 gap-5">
         <div>
-            <Label className="mb-2 block">Old password :</Label>
+            <Label className="mb-2 block">Antigua contraseña:</Label>
             <Input
                 type="password"
                 id="oldPassword"
                 name="oldPassword"
                 onChange={handleChange}
-                placeholder="Old password"
+                placeholder="*****"
                 required
             />
         </div>
         <div>
-            <Label className="mb-2 block">New password :</Label>
+            <Label className="mb-2 block">Nueva contraseña:</Label>
             <Input
                 type="password"
                 id="newPassword"
                 name="newPassword"
                 onChange={handleChange}
-                placeholder="New password"
+                placeholder="*****"
                 required
             />
         </div>
         <div>
             <Label className="mb-2 block">
-                Re-type New password :
+                Volver a escribir nueva contraseña:
             </Label>
             <Input
                 type="password"
-                placeholder="Re-type New password"
+                placeholder="*****"
                 required
             />
         </div>
     </div>
     {/*end grid*/}
     <Button className="mt-5" type="submit">
-        Save password
+        Guardar contraseña
     </Button>
 </form>
 </div>

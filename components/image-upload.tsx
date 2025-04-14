@@ -80,10 +80,10 @@ export const UploadDropzone = (props:any) => {
         <CloudUpload size={48} className="text-gray-600" />
         <h4 className="!font-normal  !text-[#858585]">
           <span className="font-semibold text-black underline">
-            Click to upload
+          Haga clic para subir
           </span>{" "}
-          or drag and drop <br />
-          Maximum file size 50 MB.
+          o arrastre y suelte <br />
+          Tamaño máximo del archivo: 50 MB.
         </h4>
         {/* <p>Only *.jpeg and *.png images will be accepted</p> */}
         {isUploading ? (

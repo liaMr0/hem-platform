@@ -42,16 +42,16 @@ const PersonalDetails = ({userInfo}:any) => {
 
     return (
 <div className="p-6 rounded-md shadow dark:shadow-gray-800 bg-white dark:bg-slate-900">
-    <h5 className="text-lg font-semibold mb-4">Personal Detail :</h5>
+    <h5 className="text-lg font-semibold mb-4">Detalles Personales:</h5>
     <form onSubmit={handleUpdate} >
         <div className="grid lg:grid-cols-2 grid-cols-1 gap-5">
             <div>
                 <Label className="mb-2 block">
-                    First Name : <span className="text-red-600">*</span>
+                    Nombre: <span className="text-red-600">*</span>
                 </Label>
                 <Input
                     type="text"
-                    placeholder="First Name:"
+                    placeholder="Julián"
                     id="firstName"
                     name="firstName"
                     value={infoState?.firstName}
@@ -61,11 +61,11 @@ const PersonalDetails = ({userInfo}:any) => {
             </div>
             <div>
                 <Label className="mb-2 block">
-                    Last Name : <span className="text-red-600">*</span>
+                    Apellido: <span className="text-red-600">*</span>
                 </Label>
                 <Input
                     type="text"
-                    placeholder="Last Name:"
+                    placeholder="Gómez"
                     id="lastName"
                     name="lastName"
                     value={infoState?.lastName}
@@ -75,7 +75,7 @@ const PersonalDetails = ({userInfo}:any) => {
             </div>
             <div>
                 <Label className="mb-2 block">
-                    Your Email : <span className="text-red-600">*</span>
+                    Email: <span className="text-red-600">*</span>
                 </Label>
                 <Input
                     type="email"
@@ -87,33 +87,33 @@ const PersonalDetails = ({userInfo}:any) => {
                 />
             </div>
             <div>
-                <Label className="mb-2 block">Occupation :</Label>
+                <Label className="mb-2 block">Ocupación:</Label>
                 <Input
                     id="designation"
                     name="designation"
                     value={infoState?.designation}
                     type="text"
                     onChange={handleChange}
-                    placeholder="Occupation :"
+                    placeholder="Ing. Informático"
                 />
             </div>
         </div>
         {/*end grid*/}
         <div className="grid grid-cols-1">
             <div className="mt-5">
-                <Label className="mb-2 block">Description :</Label>
+                <Label className="mb-2 block">Descripción:</Label>
                 <Textarea
                     id="bio"
                     name="bio"
                     value={infoState?.bio}
                     onChange={handleChange}
-                    placeholder="Message :"
+                    placeholder="Cuéntanos algo sobre ti"
                 />
             </div>
         </div>
         {/*end row*/}
         <Button className="mt-5" asChild>
-            <input type="submit" name="send" value="Save Changes" />
+            <input type="submit" name="send" value="Guardar Cambios" />
         </Button>
     </form>
     {/*end form*/}

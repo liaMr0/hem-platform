@@ -72,11 +72,11 @@ export function SignupForm({role}:any) {
         <p className="mt-5 text-3xl font-bold leading-tight text-gray-900 sm:leading-tight sm:text-5xl lg:text-3xl lg:leading-tight font-pj">
        <span className="relative inline-flex sm:inline">
                 <span className="bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] blur-lg filter opacity-30 w-full h-full absolute inset-0"></span>
-                <span className="relative">Sign Up</span>
+                <span className="relative dark:text-white">Registrarse</span>
           </span>
             </p></CardTitle>
         <CardDescription>
-          Enter your information to create an account
+          Ingrese su información para crear una cuenta.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -84,16 +84,16 @@ export function SignupForm({role}:any) {
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="first-name">First name</Label>
+              <Label htmlFor="first-name">Nombre</Label>
               <Input id="first-name" name="first-name" placeholder="Max" required />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="last-name">Last name</Label>
+              <Label htmlFor="last-name">Apellido</Label>
               <Input id="last-name" name="last-name"  placeholder="Robinson" required />
             </div>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Correo</Label>
             <Input
              
               id="email"
@@ -104,7 +104,7 @@ export function SignupForm({role}:any) {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Contraseña</Label>
             <div className="relative">
               <Input 
                 onChange={(e) => setPassword(e.target.value)}
@@ -115,7 +115,7 @@ export function SignupForm({role}:any) {
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
@@ -124,7 +124,7 @@ export function SignupForm({role}:any) {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
             <div className="relative">
               <Input 
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -135,7 +135,7 @@ export function SignupForm({role}:any) {
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                 onClick={() => setShowPassword2(!showPassword2)}
               >
                 {showPassword2 ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
@@ -143,13 +143,13 @@ export function SignupForm({role}:any) {
             </div>
           </div>
           <Button type="submit" className="w-full">
-            Create an account
+            Crear cuenta
           </Button>
         </div>
         <div className="mt-4 text-center text-sm">
-          Already have an account?{" "}
+          ¿Ya tiene una cuenta?{" "}
           <Link href="/login" className="underline">
-            Sign in
+            Inicia sesión
           </Link>
         </div>
         </form>

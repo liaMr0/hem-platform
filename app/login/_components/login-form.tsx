@@ -53,18 +53,18 @@ export function LoginForm() {
         <p className="mt-5 text-3xl font-bold leading-tight text-gray-900 sm:leading-tight sm:text-5xl lg:text-3xl lg:leading-tight font-pj">
               <span className="relative inline-flex sm:inline">
                 <span className="bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] blur-lg filter opacity-30 w-full h-full absolute inset-0"></span>
-                <span className="relative">Login</span>
+                <span className="relative dark:text-white">Inicia sesión</span>
               </span>
             </p></CardTitle>
         <CardDescription>
-          Enter your email below to login to your account
+        Ingrese su correo para acceder a su cuenta.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} >
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Correo</Label>
             <Input
               id="email"
               name="email"
@@ -75,7 +75,7 @@ export function LoginForm() {
           </div>
           <div className="grid gap-2">
             <div className="flex items-center">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Contraseña</Label>
               {/* <Link href="#" className="ml-auto inline-block text-sm underline">
                 Forgot your password?
               </Link> */}
@@ -84,7 +84,7 @@ export function LoginForm() {
               <Input className="pr-10" id="password" name="password" type={showPassword ? "text" : "password"} required />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (
@@ -96,17 +96,17 @@ export function LoginForm() {
             </div>
           </div>
           <Button type="submit" className="w-full">
-            Login
+          Acceder
           </Button>
         </div>
         <div className="mt-4 text-center text-sm">
-          Don&apos;t have an account?{" "}
+          ¿No tienes cuenta?{" "}
           <Link href="/register/instructor" className="underline">
           Instructor
           </Link>
-          {" "} or {" "}
+          {" "} o {" "}
           <Link href="/register/student" className="underline">
-          Student
+          Estudiante
           </Link>
         </div>
         </form>

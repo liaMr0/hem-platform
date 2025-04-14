@@ -21,7 +21,7 @@ export const columns = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Title <ArrowUpDown className="ml-2 h-4 w-4" />
+          Título <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -34,7 +34,7 @@ export const columns = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Total Quiz <ArrowUpDown className="ml-2 h-4 w-4" />
+          Cuestionarios Totales <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -47,7 +47,7 @@ export const columns = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Published <ArrowUpDown className="ml-2 h-4 w-4" />
+          Publicados <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -56,7 +56,7 @@ export const columns = [
 
       return (
         <Badge className={cn("bg-gray-500", isPublished && "bg-green-500")}>
-          {isPublished ? "Published" : "Unpublished"}
+          {isPublished ? "Publicado" : "No publicado"}
         </Badge>
       );
     },
@@ -77,7 +77,7 @@ export const columns = [
             <Link href={`/dashboard/quiz-sets/${id}`}>
               <DropdownMenuItem>
                 <Pencil className="h-4 w-4 mr-2" />
-                Edit
+                Editar
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>

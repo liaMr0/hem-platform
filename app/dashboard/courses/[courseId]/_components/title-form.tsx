@@ -22,7 +22,7 @@ import { toast } from 'sonner';
 
 const formSchema = z.object({
   title: z.string().min(1, {
-    message: "Title is required",
+    message: "El Título es obligatorio",
   }),
 });
 
@@ -44,23 +44,23 @@ export const TitleForm = ({ initialData = {}, courseId }) => {
       await updateCourse(courseId,values)
       toggleEdit();
       router.refresh();
-      toast.success("Course Tittle has been updated");
+      toast.success("El título del curso ha sido actualizado.");
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal");
     }
   };
 
   return (
     <div className="mt-6 border bg-gray-50 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
-        Course title
+        Título del curso
         <Button variant="ghost" onClick={toggleEdit}>
           {isEditing ? (
-            <>Cancel</>
+            <>Cancelar</>
           ) : (
             <>
               <Pencil className="h-4 w-4 mr-2" />
-              Edit Title
+              Editar Título
             </>
           )}
         </Button>
@@ -80,7 +80,7 @@ export const TitleForm = ({ initialData = {}, courseId }) => {
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="e.g. 'Advanced web development'"
+                      placeholder="e.g. '...'"
                       {...field}
                     />
                   </FormControl>
@@ -90,7 +90,7 @@ export const TitleForm = ({ initialData = {}, courseId }) => {
             />
             <div className="flex items-center gap-x-2">
               <Button disabled={!isValid || isSubmitting} type="submit">
-                Save
+                Guardar
               </Button>
             </div>
           </form>

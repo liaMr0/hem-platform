@@ -72,15 +72,15 @@ const MainNav = ({items,children}) => {
             !loginSession && (
                 <div className='items-center gap-3 hidden lg:flex'>
                 <Link href='/login' className={cn(buttonVariants({size: "sm"}), "px-4")}>
-                    Login
+                    Iniciar sesión
                 </Link>
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">Register</Button>
+            <Button variant="outline" size="sm">Registrarse</Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56 mt-4">
             <DropdownMenuItem className="cursor-pointer">
-                <Link href='/register/student'>Student</Link> 
+                <Link href='/register/student'>Estudiante</Link> 
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer">
                 <Link href='/register/instructor'>Instructor</Link> 
@@ -106,25 +106,25 @@ const MainNav = ({items,children}) => {
 
      <DropdownMenuContent align="end" className="w-56 mt-4">
         <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href='/account'>Profile</Link> 
+            <Link href='/account'>Perfil</Link> 
         </DropdownMenuItem>
 
         {loggedInUser?.role === "instructor" && (
             <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href='/dashboard'> <strong>Instructor Dashboard</strong> </Link> 
+            <Link href='/dashboard'> <strong>Panel de administración</strong> </Link> 
         </DropdownMenuItem>
         )}
 
 
 
         <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href='/account/enrolled-courses'>My Courses</Link> 
+            <Link href='/account/enrolled-courses'>Mis cursos</Link> 
         </DropdownMenuItem> 
+        {/* <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href=''></Link> 
+        </DropdownMenuItem>  */}
         <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href=''>Testimonials & Certificates</Link> 
-        </DropdownMenuItem> 
-        <DropdownMenuItem className="cursor-pointer" asChild>
- <Link href='' onClick={(e) => {e.preventDefault(); signOut(); }} >Logout</Link> 
+ <Link href='' onClick={(e) => {e.preventDefault(); signOut(); }} >Cerrar Sesión</Link> 
         </DropdownMenuItem> 
     </DropdownMenuContent>   
 

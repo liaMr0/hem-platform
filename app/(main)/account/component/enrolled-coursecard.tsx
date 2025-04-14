@@ -63,29 +63,29 @@ const EnrolledCourseCard = async ({enrollment}:any) => {
             <div className="my-3 flex items-center gap-x-2 text-sm md:text-xs">
                 <div className="flex items-center gap-x-1 text-slate-500">
                     <BookOpen className="w-4" />
-                    <span>{enrollment?.course?.modules?.length} Chapters</span>
+                    <span>{enrollment?.course?.modules?.length} Capítulos</span>
                 </div>
             </div>
             <div className="border-b pb-2 mb-2">
                 <div className="flex items-center justify-between">
                     <span className="text-md md:text-sm font-medium text-slate-700">
-                        Total Modules: {enrollment?.course?.modules?.length}
+                        Módulos totales: {enrollment?.course?.modules?.length}
                     </span>
                     <div className="text-md md:text-sm font-medium text-slate-700">
-                        Completed Modules <Badge variant="success">{totalCompletedModules}</Badge>
+                        Módulos completados: <Badge variant="success">{totalCompletedModules}</Badge>
                     </div>
                 </div>
                 <div className="flex items-center justify-between mt-2">
                     <span className="text-md md:text-sm font-medium text-slate-700">
-                        Total Quizzes: {totalQuizzes}
+                        Cuestionarios totales: {totalQuizzes}
                     </span>
                     <div className="text-md md:text-sm font-medium text-slate-700">
-                        Quiz taken <Badge variant="success">{quizzesTaken?.length}</Badge>
+                        Cuestionarios realizados: <Badge variant="success">{quizzesTaken?.length}</Badge>
                     </div>
                 </div>
                 <div className="flex items-center justify-between mt-2">
                     <span className="text-md md:text-sm font-medium text-slate-700">
-                        Mark from Quizzes
+                    Calificación de los cuestionarios:
                     </span>
                     <span className="text-md md:text-sm font-medium text-slate-700">
                         {marksFromQuizzes}
@@ -93,7 +93,7 @@ const EnrolledCourseCard = async ({enrollment}:any) => {
                 </div>
                 <div className="flex items-center justify-between mt-2">
                     <span className="text-md md:text-sm font-medium text-slate-700">
-                        Others
+                        Otros:
                     </span>
                     <span className="text-md md:text-sm font-medium text-slate-700">
                         {otherMarks}
@@ -102,7 +102,7 @@ const EnrolledCourseCard = async ({enrollment}:any) => {
             </div> 
             <div className="flex items-center justify-between mb-4">
                 <span className="text-md md:text-sm font-medium text-slate-700">
-                    Total Marks
+                    Calificación total:
                 </span>
                 <span className="text-md md:text-sm font-medium text-slate-700">
                     {totalMarks}

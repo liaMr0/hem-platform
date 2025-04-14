@@ -49,7 +49,7 @@ export function DataTable({ columns, data }) {
     <div>
       <div className="flex items-center justify-between py-4">
         <Input
-          placeholder="Filter by student name..."
+          placeholder="Filtrar por nombre del estudiante..."
           value={table.getColumn("name")?.getFilterValue() ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
@@ -100,7 +100,7 @@ export function DataTable({ columns, data }) {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  No hay resultados.
                 </TableCell>
               </TableRow>
             )}
@@ -114,7 +114,7 @@ export function DataTable({ columns, data }) {
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
-          Previous
+          Anterior
         </Button>
         <Button
           variant="outline"
@@ -122,7 +122,7 @@ export function DataTable({ columns, data }) {
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
-          Next
+          Siguiente
         </Button>
       </div>
     </div>

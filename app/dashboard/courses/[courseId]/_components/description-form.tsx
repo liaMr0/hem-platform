@@ -21,7 +21,7 @@ import { updateCourse } from "@/app/actions/course";
 
 const formSchema = z.object({
   description: z.string().min(1, {
-    message: "Description is required",
+    message: "La descripción es obligatoria",
   }),
 });
 
@@ -43,25 +43,25 @@ export const DescriptionForm = ({ initialData, courseId }) => {
   const onSubmit = async (values) => {
     try {
       await updateCourse(courseId,values)
-      toast.success("Course updated");
+      toast.success("Curso actualizado");
       toggleEdit();
       router.refresh();
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal");
     }
   };
 
   return (
     <div className="mt-6 border bg-gray-50 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
-        Course Description
+      Descripción del curso
         <Button variant="ghost" onClick={toggleEdit}>
           {isEditing ? (
-            <>Cancel</>
+            <>Cancelar</>
           ) : (
             <>
               <Pencil className="h-4 w-4 mr-2" />
-              Edit Description
+              Editar Descripción
             </>
           )}
         </Button>
@@ -90,7 +90,7 @@ export const DescriptionForm = ({ initialData, courseId }) => {
                   <FormControl>
                     <Textarea
                       disabled={isSubmitting}
-                      placeholder="e.g. 'This course is about...'"
+                      placeholder="e.g. 'Este curso es sobre...'"
                       {...field}
                     />
                   </FormControl>
@@ -100,7 +100,7 @@ export const DescriptionForm = ({ initialData, courseId }) => {
             />
             <div className="flex items-center gap-x-2">
               <Button disabled={!isValid || isSubmitting} type="submit">
-                Save
+                Guardar
               </Button>
             </div>
           </form>

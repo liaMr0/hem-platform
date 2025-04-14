@@ -57,25 +57,25 @@ export const QuizSetForm = ({
   const onSubmit = async (values) => {
     try {
       await updateQuizSetForCourse(courseId,values);
-      toast.success("Course updated");
+      toast.success("Curso actualizado.");
       toggleEdit();
       router.refresh();
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal");
     }
   };
 
   return (
     <div className="mt-6 border bg-gray-50 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
-        Quiz Set
+      Conjunto de preguntas
         <Button variant="ghost" onClick={toggleEdit}>
           {isEditing ? (
-            <>Cancel</>
+            <>Cancelar</>
           ) : (
             <>
               <Pencil className="h-4 w-4 mr-2" />
-              Edit Quiz Set
+              Editar conjunto de preguntas
             </>
           )}
         </Button>
@@ -87,7 +87,7 @@ export const QuizSetForm = ({
             !initialData.quizSetId && "text-slate-500 italic"
           )}
         >
-          {foundMatch ? <span>{foundMatch.label}</span> : <span> "No Quiz set selected"</span>}
+          {foundMatch ? <span>{foundMatch.label}</span> : <span> "No hay cuestionarios seleccionados."</span>}
         </p>
       )}
       {console.log({ options })}
@@ -111,7 +111,7 @@ export const QuizSetForm = ({
             />
             <div className="flex items-center gap-x-2">
               <Button disabled={!isValid || isSubmitting} type="submit">
-                Save
+              Guardar
               </Button>
             </div>
           </form>

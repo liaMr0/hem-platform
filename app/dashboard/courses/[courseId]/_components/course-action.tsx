@@ -24,23 +24,23 @@ export const CourseActions = ({ courseId,isActive }) => {
             case "change-active": {
           const activeState = await changeCoursePublishState(courseId);
                 setPublished(!activeState);
-                toast.success("The Course has been updated");
+                toast.success("Este curso ha sido actualizado");
                 router.refresh();
                 break;
             }
 
             case "delete": {
                 if (published) {
-                    toast.error("A published Course can not be deleted. First unpublish it, then delete");
+                    toast.error("Un curso publicado no puede ser eliminado. Primero despublíquelo, después elimínelo.");
                 } else {
                     await deleteCourse(courseId);
-                    toast.success("The Course has been deleted successfully");
+                    toast.success("El curso ha sido eliminado satisfactoriamente");
                     router.push(`/dashboard/courses`)
                 }
                 break;
             } 
             default:
-                throw new Error("Invalid Lesson Action");
+                throw new Error("Acción inválida");
         }
     } catch (e) {
         toast.error(e.message);
@@ -52,7 +52,7 @@ export const CourseActions = ({ courseId,isActive }) => {
     <form onSubmit={handleSubmit}>
     <div className="flex items-center gap-x-2">
       <Button variant="outline" size="sm" onClick={() => setAction("change-active")}>
-        {published ? "Unpublish" : "Publish"}
+        {published ? "No publicar" : "Publicar"}
       </Button>
 
       <Button size="sm" onClick={() => setAction("delete")}>

@@ -44,23 +44,23 @@ export const SubTitleForm = ({ initialData = {}, courseId }) => {
       await updateCourse(courseId,values)
       toggleEdit();
       router.refresh();
-      toast.success("Course SubTittle has been updated");
+      toast.success("El subtítulo del curso ha sido actualizado.");
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal.");
     }
   };
 
   return (
     <div className="mt-6 border bg-gray-50 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
-        Course Subtitle
+        Subtítulo del curso
         <Button variant="ghost" onClick={toggleEdit}>
           {isEditing ? (
-            <>Cancel</>
+            <>Cancelar</>
           ) : (
             <>
               <Pencil className="h-4 w-4 mr-2" />
-              Edit SubTitle
+              Editar Subtítulo
             </>
           )}
         </Button>
@@ -90,7 +90,7 @@ export const SubTitleForm = ({ initialData = {}, courseId }) => {
             />
             <div className="flex items-center gap-x-2">
               <Button disabled={!isValid || isSubmitting} type="submit">
-                Save
+                Guardar
               </Button>
             </div>
           </form>

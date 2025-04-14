@@ -24,7 +24,7 @@ export const columns = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Student Name <ArrowUpDown className="ml-2 h-4 w-4" />
+          Nombre del estudiante<ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -37,7 +37,7 @@ export const columns = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Student Email <ArrowUpDown className="ml-2 h-4 w-4" />
+          Email del Estudiante <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -50,7 +50,7 @@ export const columns = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Quiz Mark <ArrowUpDown className="ml-2 h-4 w-4" />
+          Calificación del examen<ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -63,7 +63,7 @@ export const columns = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Progress <ArrowUpDown className="ml-2 h-4 w-4" />
+          Progreso <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -80,7 +80,7 @@ export const columns = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Enroll Date <ArrowUpDown className="ml-2 h-4 w-4" />
+          Fecha de matrícula <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },

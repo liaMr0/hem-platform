@@ -7,9 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { ResourceCard } from "./resource-card";
 const ResourcesSection = () => {
     return (
-        <section id="resources" className="bg-gradient-to-br from-muted/50 via-muted/30 to-background py-24 md:py-32 relative overflow-hidden">
+        <section id="resources" className="px-8 bg-gradient-to-br from-muted/50 via-muted/30 to-background py-24 md:py-32 relative overflow-hidden">
         <div className="absolute -top-40 right-0 h-80 w-80 rounded-full bg-primary/10 blur-3xl"></div>
-        <div className="container relative z-10 px-8">
+        <div className="container relative z-10 ">
           <div className="mb-16 text-center">
             <Badge className="mb-4 bg-primary/20 text-primary hover:bg-primary/30 font-medium px-4 py-1.5">
               <Sparkles className="mr-1 h-4 w-4" /> Recursos
@@ -23,8 +23,8 @@ const ResourcesSection = () => {
           </div>
 
           <Tabs defaultValue="all" className="w-full">
-            <div className="flex justify-center">
-              <TabsList className="mb-8 p-1 bg-muted">
+            <div className="flex justify-center px-8">
+              <TabsList className="mb-8 p-1 bg-muted ">
                 <TabsTrigger value="all" className="px-6 py-2.5">Todos</TabsTrigger>
                 <TabsTrigger value="methodology" className="px-6 py-2.5">Metodología</TabsTrigger>
                 <TabsTrigger value="technology" className="px-6 py-2.5">Tecnología</TabsTrigger>

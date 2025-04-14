@@ -60,7 +60,7 @@ const EditCourse = async ({ params: {courseId} }:any) => {
     <> 
     {
       !course.active && <AlertBanner
-        label="This course is unpublished. It will not be visible in the course."
+        label="Este curso no está publicado. No será visible."
         variant="warning"
       />
     }
@@ -73,7 +73,7 @@ const EditCourse = async ({ params: {courseId} }:any) => {
           <div>
             <div className="flex items-center gap-x-2">
               <IconBadge icon={LayoutDashboard} />
-              <h2 className="text-xl">Customize your course</h2>
+              <h2 className="text-xl">Personaliza tu curso</h2>
             </div>
             <TitleForm
               initialData={{
@@ -105,7 +105,7 @@ const EditCourse = async ({ params: {courseId} }:any) => {
             <div> 
               <div className="flex items-center gap-x-2 mb-6">
                 <IconBadge icon={ListChecks} />
-                <h2 className="text-xl">Course Modules</h2>
+                <h2 className="text-xl">Módulos del curso</h2>
               </div>
 
               <ModulesForm initialData={modules} courseId={courseId} /> 

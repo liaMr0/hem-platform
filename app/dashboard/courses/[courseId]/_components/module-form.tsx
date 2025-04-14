@@ -71,11 +71,11 @@ export const ModulesForm = ({ initialData, courseId }) => {
           title: values.title,
         },
       ]);
-      toast.success("Module created");
+      toast.success("Módulo creado.");
       toggleCreating();
       router.refresh();
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal");
     }
   }; 
 
@@ -85,10 +85,10 @@ export const ModulesForm = ({ initialData, courseId }) => {
       reOrderModules(updateData);
       setIsUpdating(true);
 
-      toast.success("Chapters reordered");
+      toast.success("Capítulos reordenados");
       router.refresh();
     } catch {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal");
     } finally {
       setIsUpdating(false);
     }
@@ -106,14 +106,14 @@ export const ModulesForm = ({ initialData, courseId }) => {
         </div>
       )}
       <div className="font-medium flex items-center justify-between">
-        Course Modules
+        Módulos del curso
         <Button variant="ghost" onClick={toggleCreating}>
           {isCreating ? (
-            <>Cancel</>
+            <>Cancelar</>
           ) : (
             <>
               <PlusCircle className="h-4 w-4 mr-2" />
-              Add a module
+              Agregar módulo
             </>
           )}
         </Button>
@@ -133,7 +133,7 @@ export const ModulesForm = ({ initialData, courseId }) => {
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="e.g. 'Introduction to the course...'"
+                      placeholder="e.g. 'Introducción al curso...'"
                       {...field}
                     />
                   </FormControl>
@@ -142,7 +142,7 @@ export const ModulesForm = ({ initialData, courseId }) => {
               )}
             />
             <Button disabled={!isValid || isSubmitting} type="submit">
-              Create
+              Crear
             </Button>
           </form>
         </Form>
@@ -154,7 +154,7 @@ export const ModulesForm = ({ initialData, courseId }) => {
             !modules?.length && "text-slate-500 italic"
           )}
         >
-          {!modules?.length && "No module"}
+          {!modules?.length && "No hay módulos"}
           <ModuleList
             onEdit={onEdit}
             onReorder={onReorder}
@@ -164,7 +164,7 @@ export const ModulesForm = ({ initialData, courseId }) => {
       )}
       {!isCreating && (
         <p className="text-xs text-muted-foreground mt-4">
-          Drag & Drop to reorder the modules
+          Arrastre y suelte para cambiar el orden de los módulos.
         </p>
       )}
     </div>

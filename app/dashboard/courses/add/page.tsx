@@ -29,10 +29,10 @@ import { createCourse } from "@/app/actions/course";
 
 const formSchema = z.object({
   title: z.string().min(1, {
-    message: "Title is required!",
+    message: "El título es obligatorio.",
   }),
   description: z.string().min(1, {
-    message: "Description is required!",
+    message: "La descripción es obligatoria",
   }),
 });
 
@@ -54,9 +54,9 @@ const AddCourse = () => {
     try {
       const course = await createCourse(values);
       router.push(`/dashboard/courses/${course?._id}`);
-      toast.success("Course created");
+      toast.success("Curso creado");
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal");
     }
     console.log(values);
   };
@@ -75,7 +75,7 @@ const AddCourse = () => {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Course Title</FormLabel>
+                  <FormLabel>Título del curso</FormLabel>
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
@@ -93,7 +93,7 @@ const AddCourse = () => {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Course Description</FormLabel>
+                  <FormLabel>Descripción</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Course overview"
@@ -102,7 +102,7 @@ const AddCourse = () => {
                     />
                   </FormControl>
                   <FormDescription>
-                    Write a brief description of your course
+                    Escribe una breve descripción del curso.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -111,11 +111,11 @@ const AddCourse = () => {
             <div className="flex items-center gap-x-2">
               <Link href="/dashboard/courses">
                 <Button variant="outline" type="button">
-                  Cancel
+                  Cancelar
                 </Button>
               </Link>
               <Button type="submit" disabled={!isValid || isSubmitting}>
-                Continue
+                Continuar
               </Button>
             </div>
           </form>

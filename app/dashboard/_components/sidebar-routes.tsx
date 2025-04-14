@@ -6,32 +6,32 @@ import { BookOpen } from "lucide-react";
 import { PlusCircle } from "lucide-react";
 import { SidebarItem } from "./sidebar-item";
 import { BookA } from "lucide-react";
-import { Radio } from "lucide-react";
+import { User} from "lucide-react";
 
 const routes = [
   {
     icon: BarChart,
-    label: "Analytics",
+    label: "Analíticas",
     href: "/dashboard",
   },
   {
     icon: BookOpen,
-    label: "Courses",
+    label: "Cursos",
     href: "/dashboard/courses",
   },
+  // {
+  //   icon: PlusCircle,
+  //   label: "Agregar Curso",
+  //   href: "/dashboard/courses/add",
+  // },
   {
-    icon: PlusCircle,
-    label: "Add Course",
-    href: "/dashboard/courses/add",
-  },
-  {
-    icon: Radio,
-    label: "Lives",
-    href: "/dashboard/lives",
+    icon: User,
+    label: "Usuarios",
+    href: "/dashboard/users",
   },
   {
     icon: BookA,
-    label: "Quizes",
+    label: "Cuestionarios",
     href: "/dashboard/quiz-sets",
   },
 ];

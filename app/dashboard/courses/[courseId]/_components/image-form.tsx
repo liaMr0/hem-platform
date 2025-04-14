@@ -41,7 +41,7 @@ export const ImageForm = ({ initialData, courseId }) => {
           
           if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error || "Error uploading file");
+            throw new Error(errorData.error || "Error subiendo la imagen");
           }
           
           const result = await response.json();
@@ -50,13 +50,13 @@ export const ImageForm = ({ initialData, courseId }) => {
           if (response.status === 200) {
             // Actualiza con el nombre de archivo devuelto por la API
             initialData.imageUrl = `/assets/images/courses/${result.filename}`;
-            toast.success("Image uploaded successfully");
+            toast.success("Imagen subida correctamente");
             toggleEdit();
             router.refresh(); 
           }
         } catch (e) {
           console.error("Upload error:", e);
-          toast.error(e.message || "Error uploading file");
+          toast.error(e.message || "Error subiendo la imagen");
         }
       }
       uploadFile();
@@ -71,30 +71,30 @@ export const ImageForm = ({ initialData, courseId }) => {
 
   const onSubmit = async (values) => {
     try {
-      toast.success("Course updated");
+      toast.success("Curso actualizado");
       toggleEdit();
       router.refresh();
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal");
     }
   };
 
   return (
     <div className="mt-6 border bg-gray-50 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
-        Course Image
+        Imagen del curso
         <Button variant="ghost" onClick={toggleEdit}>
-          {isEditing && <>Cancel</>}
+          {isEditing && <>Cancelar</>}
           {!isEditing && !initialData.imageUrl && (
             <>
               <PlusCircle className="h-4 w-4 mr-2" />
-              Add an image
+              Agregar una imagen
             </>
           )}
           {!isEditing && initialData.imageUrl && (
             <>
               <Pencil className="h-4 w-4 mr-2" />
-              Edit image
+              Editar imagen
             </>
           )}
         </Button>
@@ -118,7 +118,7 @@ export const ImageForm = ({ initialData, courseId }) => {
         <div>
           <UploadDropzone onUpload={(file) => setFile(file)} />
           <div className="text-xs text-muted-foreground mt-4">
-            16:9 aspect ratio recommended
+            16:9 Relación de aspecto recomendada.
           </div>
         </div>
       )}

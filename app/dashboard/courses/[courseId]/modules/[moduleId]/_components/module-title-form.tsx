@@ -41,25 +41,25 @@ export const ModuleTitleForm = ({ initialData, courseId, chapterId }:any) => {
     try {
       values["slug"] = getSlug(values.title)
       await updateModule(chapterId,values);
-      toast.success("Module title updated");
+      toast.success("Título del módulo actualizado.");
       toggleEdit();
       router.refresh();
     } catch {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal.");
     }
   };
 
   return (
     <div className="mt-6 border bg-slate-100 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
-        Module title
+        Título del Módulo
         <Button variant="ghost" onClick={toggleEdit}>
           {isEditing ? (
-            <>Cancel</>
+            <>Cancelar</>
           ) : (
             <>
               <Pencil className="h-4 w-4 mr-2" />
-              Edit Title
+              Editar Título
             </>
           )}
         </Button>
@@ -79,7 +79,7 @@ export const ModuleTitleForm = ({ initialData, courseId, chapterId }:any) => {
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="e.g. 'Introduction to the course'"
+                      placeholder="Introducción al curso..."
                       {...field}
                     />
                   </FormControl>
@@ -89,7 +89,7 @@ export const ModuleTitleForm = ({ initialData, courseId, chapterId }:any) => {
             />
             <div className="flex items-center gap-x-2">
               <Button disabled={!isValid || isSubmitting} type="submit">
-                Save
+                Guardar
               </Button>
             </div>
           </form>

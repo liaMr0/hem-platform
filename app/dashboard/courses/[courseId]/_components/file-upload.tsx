@@ -184,7 +184,7 @@ export const FileUploadForm = ({ initialData, courseId }) => {
       <div className="font-medium flex items-center justify-between">
         Documentos del curso
         <Button variant="ghost" onClick={toggleEdit}>
-          {isEditing && "Cancel"}
+          {isEditing && "Cancelar"}
           {!isEditing && existingFiles.length === 0 && (
             <>
               <PlusCircle className="h-4 w-4 mr-2" />

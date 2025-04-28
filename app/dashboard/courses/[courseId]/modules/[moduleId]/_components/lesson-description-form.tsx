@@ -46,25 +46,25 @@ export const LessonDescriptionForm = ({ initialData, courseId, lessonId }:any) =
     try {
       await updateLesson(lessonId,values);
       setDescription(values.title);
-      toast.success("Lesson updated");
+      toast.success("Lección actualizada");
       toggleEdit();
       router.refresh();
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal");
     }
   };
 
   return (
     <div className="mt-6 border bg-slate-100 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
-        Chapter Description
+        Descripción del capítulo
         <Button variant="ghost" onClick={toggleEdit}>
           {isEditing ? (
-            <>Cancel</>
+            <>Cancelar</>
           ) : (
             <>
               <Pencil className="h-4 w-4 mr-2" />
-              Edit Description
+              Editar Descripción
             </>
           )}
         </Button>
@@ -85,7 +85,7 @@ export const LessonDescriptionForm = ({ initialData, courseId, lessonId }:any) =
                   <FormItem>
                    <FormControl>
         <Textarea disabled={isSubmitting} 
-        placeholder="e.g. 'This course is about...'"
+            placeholder="En este curso se aborda..."
                 {...field}
               />
             </FormControl>
@@ -95,7 +95,7 @@ export const LessonDescriptionForm = ({ initialData, courseId, lessonId }:any) =
               />
               <div className="flex items-center gap-x-2">
                 <Button disabled={!isValid || isSubmitting} type="submit">
-                  Save
+                  Guardar
                 </Button>
               </div>
             </form>

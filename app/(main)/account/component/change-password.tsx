@@ -30,7 +30,7 @@ const ChangePassword = ({email}:any) => {
 
         try {
             await changePassword(email,passwordState?.oldPassword, passwordState?.newPassword);
-            toast.success("Password changed successfully")
+            toast.success("La contraseña se cambió correctamente.")
         } catch (error) {
             toast.error(`Error: ${(error as Error).message}`);
         }
@@ -40,50 +40,50 @@ const ChangePassword = ({email}:any) => {
 
     return (
         <div>
-<h5 className="text-lg font-semibold mb-4">
-    Cambiar contraseña:
-</h5>
-<form onSubmit={doPasswordChange}>
-    <div className="grid grid-cols-1 gap-5">
-        <div>
-            <Label className="mb-2 block">Antigua contraseña:</Label>
-            <Input
-                type="password"
-                id="oldPassword"
-                name="oldPassword"
-                onChange={handleChange}
-                placeholder="*****"
-                required
-            />
+            <h5 className="text-lg font-semibold mb-4">
+                Cambiar contraseña:
+            </h5>
+            <form onSubmit={doPasswordChange}>
+                <div className="grid grid-cols-1 gap-5">
+                    <div>
+                        <Label className="mb-2 block">Antigua contraseña:</Label>
+                        <Input
+                            type="password"
+                            id="oldPassword"
+                            name="oldPassword"
+                            onChange={handleChange}
+                            placeholder="*****"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <Label className="mb-2 block">Nueva contraseña:</Label>
+                        <Input
+                            type="password"
+                            id="newPassword"
+                            name="newPassword"
+                            onChange={handleChange}
+                            placeholder="*****"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <Label className="mb-2 block">
+                            Volver a escribir nueva contraseña:
+                        </Label>
+                        <Input
+                            type="password"
+                            placeholder="*****"
+                            required
+                        />
+                    </div>
+                </div>
+                {/*end grid*/}
+                <Button className="mt-5" type="submit">
+                    Guardar contraseña
+                </Button>
+            </form>
         </div>
-        <div>
-            <Label className="mb-2 block">Nueva contraseña:</Label>
-            <Input
-                type="password"
-                id="newPassword"
-                name="newPassword"
-                onChange={handleChange}
-                placeholder="*****"
-                required
-            />
-        </div>
-        <div>
-            <Label className="mb-2 block">
-                Volver a escribir nueva contraseña:
-            </Label>
-            <Input
-                type="password"
-                placeholder="*****"
-                required
-            />
-        </div>
-    </div>
-    {/*end grid*/}
-    <Button className="mt-5" type="submit">
-        Guardar contraseña
-    </Button>
-</form>
-</div>
     );
 };
 

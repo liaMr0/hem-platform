@@ -35,9 +35,9 @@ export const LessonModal = ({ open, setOpen,courseId,lesson,moduleId }) => {
         }}
       >
         <DialogHeader>
-          <DialogTitle>Lesson Editor</DialogTitle>
+          <DialogTitle>Editor de Lección</DialogTitle>
           <DialogDescription>
-            Customize and manage the settings for this lesson.
+            Personaliza y administra la configuración de esta lección.
           </DialogDescription>
         </DialogHeader>
 
@@ -49,7 +49,7 @@ export const LessonModal = ({ open, setOpen,courseId,lesson,moduleId }) => {
                 className="flex items-center text-sm hover:opacity-75 transition mb-6"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to course setup
+                Volver a la configuración del curso.
               </Link>
               <div className="flex items-center justify-end">
                 <LessonActions lesson={lesson} moduleId={moduleId} onDelete={postDelete} />
@@ -61,7 +61,7 @@ export const LessonModal = ({ open, setOpen,courseId,lesson,moduleId }) => {
               <div>
                 <div className="flex items-center gap-x-2">
                   <IconBadge icon={LayoutDashboard} />
-                  <h2 className="text-xl">Customize Your chapter</h2>
+                  <h2 className="text-xl">Personaliza tu capítulo</h2>
                 </div>
                 <LessonTitleForm
                   initialData={{title: lesson?.title}}
@@ -74,18 +74,18 @@ export const LessonModal = ({ open, setOpen,courseId,lesson,moduleId }) => {
                   lessonId={lesson?.id}
                 />
               </div>
-              <div>
+              {/* <div>
                 <div className="flex items-center gap-x-2">
                   <IconBadge icon={Eye} />
                   <h2 className="text-xl">Access Settings</h2>
                 </div>
             
-              </div>
+              </div> */}
             </div>
             <div>
               <div className="flex items-center gap-x-2">
                 <IconBadge icon={Video} />
-                <h2 className="text-xl">Add a video</h2>
+                <h2 className="text-xl">Agregar video</h2>
               </div>
               <VideoUrlForm
                 initialData={{

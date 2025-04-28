@@ -150,7 +150,7 @@ export const AddQuizForm = ({ quizSetId }) => {
     }
        
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal.");
     }
   };
 

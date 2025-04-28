@@ -45,10 +45,10 @@ export const ReviewModal = ({courseId,loginid, open, setOpen }) => {
   const onSubmit = async (values) => {
     try {
       await createReview(values,loginid,courseId);
-      toast.success("Review added");
+      toast.success("Reseña agregada.");
       setOpen(false);
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal.");
     }
     console.log(values);
   };

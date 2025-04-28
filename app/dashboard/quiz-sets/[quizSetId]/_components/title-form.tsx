@@ -46,7 +46,7 @@ export const TitleForm = ({ initialData = {},quizSetId }) => {
       toggleEdit();
       router.refresh();
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal.");
     }
   };
 

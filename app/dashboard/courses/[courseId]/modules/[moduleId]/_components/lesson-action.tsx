@@ -20,13 +20,13 @@ export const LessonActions = ({ lesson,moduleId,onDelete }:any) => {
             case "change-active": {
                 const activeState = await changeLessonPublishState(lesson.id);
                 setPublished(!activeState);
-                toast.success("The lesson has been updated");
+                toast.success("La lección ha sido actualizada.");
                 break;
             }
 
             case "delete": {
                 if (published) {
-                    toast.error("A published lesson can not be deleted. First unpublish it, then delete");
+                    toast.error("Una lección publicada no puede ser eliminada. Primero, anúlela de la publicación y luego elimínela.");
                 } else {
                     await deleteLesson(lesson.id,moduleId);
                     onDelete();
@@ -34,7 +34,7 @@ export const LessonActions = ({ lesson,moduleId,onDelete }:any) => {
                 break;
             } 
             default:
-                throw new Error("Invalid Lesson Action");
+                throw new Error("Acción de lección inválida.");
         }
     } catch (e) {
         toast.error(e.message);
@@ -46,7 +46,7 @@ export const LessonActions = ({ lesson,moduleId,onDelete }:any) => {
     <form onSubmit={handleSubmit}>
     <div className="flex items-center gap-x-2">
       <Button variant="outline" size="sm" onClick={() => setAction("change-active")}>
-        {published ? "Unpublish" : "Publish"}
+        {published ? "Despublicar" : "Publicar"}
       </Button>
 
       <Button size="sm" onClick={() => setAction("delete")}>

@@ -44,25 +44,25 @@ export const LessonTitleForm = ({ initialData, courseId, lessonId }:any) => {
       values["slug"] = getSlug(values.title);
       await updateLesson(lessonId,values);
       setTitle(values.title);
-      toast.success("Lesson updated");
+      toast.success("Lección actualizada");
       toggleEdit();
       router.refresh();
     } catch {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal.");
     }
   };
 
   return (
     <div className="mt-6 border bg-slate-100 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
-        Lesson title
+        Título de la lección
         <Button variant="ghost" onClick={toggleEdit}>
           {isEditing ? (
-            <>Cancel</>
+            <>Cancelar</>
           ) : (
             <>
               <Pencil className="h-4 w-4 mr-2" />
-              Edit Title
+              Editar Título
             </>
           )}
         </Button>
@@ -84,7 +84,7 @@ export const LessonTitleForm = ({ initialData, courseId, lessonId }:any) => {
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="e.g. 'Introduction to the course'"
+                      placeholder="Introducción al curso..."
                       {...field}
                     />
                   </FormControl>
@@ -94,7 +94,7 @@ export const LessonTitleForm = ({ initialData, courseId, lessonId }:any) => {
             />
             <div className="flex items-center gap-x-2">
               <Button disabled={!isValid || isSubmitting} type="submit">
-                Save
+                Guardar
               </Button>
             </div>
           </form>

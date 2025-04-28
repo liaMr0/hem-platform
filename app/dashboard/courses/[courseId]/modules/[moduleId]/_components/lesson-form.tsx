@@ -66,11 +66,11 @@ export const LessonForm = ({ initialData, moduleId,courseId }:any) => {
             title: values.title,
           },
         ]);
-        toast.success("Lesson created");
+        toast.success("Lección creada correctamente.");
         toggleCreating();
         router.refresh();
       } catch (error) {
-        toast.error("Something went wrong");
+        toast.error("Algo salió mal.");
       }
     }; 
  
@@ -79,10 +79,10 @@ export const LessonForm = ({ initialData, moduleId,courseId }:any) => {
     try {
       setIsUpdating(true);
       await reOrderLesson(updateData);
-      toast.success("Lesson reordered");
+      toast.success("Lecciones reordenadas.");
       router.refresh();
     } catch {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal.");
     } finally {
       setIsUpdating(false);
     }
@@ -102,14 +102,14 @@ export const LessonForm = ({ initialData, moduleId,courseId }:any) => {
         </div>
       )}
       <div className="font-medium flex items-center justify-between">
-        Module Lessions
+        Lecciones del Módulo
         <Button variant="ghost" onClick={toggleCreating}>
           {isCreating ? (
-            <>Cancel</>
+            <>Cancelar</>
           ) : (
             <>
               <PlusCircle className="h-4 w-4 mr-2" />
-              Add a chapter
+              Agregar capítulo
             </>
           )}
         </Button>
@@ -129,7 +129,7 @@ export const LessonForm = ({ initialData, moduleId,courseId }:any) => {
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="e.g. 'Introduction to the course...'"
+                      placeholder="Introducción al curso..."
                       {...field}
                     />
                   </FormControl>
@@ -138,7 +138,7 @@ export const LessonForm = ({ initialData, moduleId,courseId }:any) => {
               )}
             />
             <Button disabled={!isValid || isSubmitting} type="submit">
-              Create
+              Crear
             </Button>
           </form>
         </Form>
@@ -150,7 +150,7 @@ export const LessonForm = ({ initialData, moduleId,courseId }:any) => {
             !lessons?.length && "text-slate-500 italic"
           )}
         >
-          {!lessons?.length && "No module"}
+          {!lessons?.length && "No hay módulos"}
           <LessonList
             onEdit={onEdit}
             onReorder={onReorder}
@@ -160,7 +160,7 @@ export const LessonForm = ({ initialData, moduleId,courseId }:any) => {
       )}
       {!isCreating && (
         <p className="text-xs text-muted-foreground mt-4">
-          Drag & Drop to reorder the modules
+          Arrastre y suelte para cambiar el orden de las lecciones.
         </p>
       )}
       <LessonModal open={isEditing} setOpen={setIsEditing} courseId={courseId} lesson={lessonToEdit} moduleId={moduleId} />

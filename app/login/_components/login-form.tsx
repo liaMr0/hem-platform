@@ -36,7 +36,7 @@ export function LoginForm() {
           setError("Ha ocurrido un error.");
       } else {
         toast.success("Login Successfuly!");
-        router.push("/dashboard")
+        router.push("/")
       }      
     } catch (e) {
       setError((e as Error).message);
@@ -101,13 +101,10 @@ export function LoginForm() {
         </div>
         <div className="mt-4 text-center text-sm">
           ¿No tienes cuenta?{" "}
-          <Link href="/register/instructor" className="underline">
-          Instructor
-          </Link>
-          {" "} o {" "}
           <Link href="/register/student" className="underline">
           Estudiante
           </Link>
+         
         </div>
         </form>
       </CardContent>

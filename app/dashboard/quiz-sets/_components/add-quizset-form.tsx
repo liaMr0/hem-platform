@@ -51,7 +51,7 @@ const AddQuizSetForm = () => {
       router.push(`/dashboard/quiz-sets/${quizSetId}`);
       toast.success("Quiz Set Created");
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal.");
     }
   };
   return (

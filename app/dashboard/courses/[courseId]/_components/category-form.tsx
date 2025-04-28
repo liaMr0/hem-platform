@@ -46,11 +46,11 @@ export const CategoryForm = ({
     try {
       const selectedCategory = options.find(option => option.value === values.value);
       await updateCourse(courseId,{"category": selectedCategory.id})
-      toast.success("Course updated");
+      toast.success("Curso actualizado.");
       toggleEdit();
       router.refresh();
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal.");
     }
   };
 

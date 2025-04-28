@@ -32,7 +32,7 @@ const PersonalDetails = ({userInfo}:any) => {
         event.preventDefault();
         try {
             await updateUserInfo(userInfo?.email,infoState);
-            toast.success("User details updated successfully");
+            toast.success("Datos del usuario actualizados correctamente.");
         } catch (error) {
             toast.error(`Error: ${(error as Error).message}`);
         }

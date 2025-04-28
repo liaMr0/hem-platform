@@ -79,7 +79,7 @@ const AddCourse = () => {
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="e.g 'Reactive Accelerator'"
+                      placeholder="Estrategias de Evaluación en el Modelo Híbrido"
                       {...field}
                     />
                   </FormControl>
@@ -96,7 +96,7 @@ const AddCourse = () => {
                   <FormLabel>Descripción</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Course overview"
+                      placeholder="Aprende técnicas efectivas para medir el progreso de tus estudiantes en el modelo híbrido."
                       className="resize-none"
                       {...field}
                     />

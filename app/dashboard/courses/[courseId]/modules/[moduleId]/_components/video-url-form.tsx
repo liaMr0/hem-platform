@@ -58,14 +58,14 @@ export const VideoUrlForm = ({ initialData, courseId, lessonId }:any) => {
       if (splitted.length === 3) {
         payload["duration"] = splitted[0] * 3600 + splitted[1] * 60 + splitted[2] * 1;
         await updateLesson(lessonId,payload)
-        toast.success("Lesson updated");
+        toast.success("Lección actualizada.");
         toggleEdit();
       router.refresh();
       } else {
-        toast.error("The duration format must be as hh:mm:ss");
+        toast.error("El formato de duración debe ser hh:mm:ss");
       } 
     } catch {
-      toast.error("Something went wrong");
+      toast.error("Algo salió mal.");
     }
   };
 
@@ -75,11 +75,11 @@ export const VideoUrlForm = ({ initialData, courseId, lessonId }:any) => {
         Video URL
         <Button variant="ghost" onClick={toggleEdit}>
           {isEditing ? (
-            <>Cancel</>
+            <>Cancelar</>
           ) : (
             <>
               <Pencil className="h-4 w-4 mr-2" />
-              Edit URL
+              Editar Url
             </>
           )}
         </Button>
@@ -106,11 +106,11 @@ export const VideoUrlForm = ({ initialData, courseId, lessonId }:any) => {
               name="url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Video URL</FormLabel>
+                  <FormLabel>Url del video</FormLabel>
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="e.g. 'Introduction to the course'"
+                      placeholder="https://www.youtube.com/watch?v"
                       {...field}
                     />
                   </FormControl>
@@ -124,11 +124,11 @@ export const VideoUrlForm = ({ initialData, courseId, lessonId }:any) => {
               name="duration"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Video Duration</FormLabel>
+                  <FormLabel>Duración del video</FormLabel>
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="e.g. '10:30:18'"
+                      placeholder="10:30:18"
                       {...field}
                     />
                   </FormControl>
@@ -138,7 +138,7 @@ export const VideoUrlForm = ({ initialData, courseId, lessonId }:any) => {
             />
             <div className="flex items-center gap-x-2">
               <Button disabled={!isValid || isSubmitting} type="submit">
-                Save
+                Guardar
               </Button>
             </div>
           </form>

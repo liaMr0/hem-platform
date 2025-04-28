@@ -23,14 +23,14 @@ export const ModuleActions = ({ module,courseId }:any) => {
             case "change-active": {
           const activeState = await changeModulePublishState(module.id);
                 setPublished(!activeState);
-                toast.success("The Module has been updated");
+                toast.success("El módulo ha sido actualizado.");
                 router.refresh();
                 break;
             }
 
             case "delete": {
                 if (published) {
-                    toast.error("A published lesson can not be deleted. First unpublish it, then delete");
+                    toast.error("Una lección publicada no se puede eliminar. Primero, anúlela de la publicación y luego elimínela.");
                 } else {
                     await deleteModule(module.id,courseId);
                     router.push(`/dashboard/courses/${courseId}`)
@@ -38,7 +38,7 @@ export const ModuleActions = ({ module,courseId }:any) => {
                 break;
             } 
             default:
-                throw new Error("Invalid Lesson Action");
+                throw new Error("Acción inválida.");
         }
     } catch (e) {
         toast.error((e as Error).message);
@@ -50,7 +50,7 @@ export const ModuleActions = ({ module,courseId }:any) => {
     <form onSubmit={handleSubmit}>
     <div className="flex items-center gap-x-2">
       <Button variant="outline" size="sm" onClick={() => setAction("change-active")}>
-        {published ? "Unpublish" : "Publish"}
+        {published ? "Despublicar" : "Publicar"}
       </Button>
 
       <Button size="sm" onClick={() => setAction("delete")}>

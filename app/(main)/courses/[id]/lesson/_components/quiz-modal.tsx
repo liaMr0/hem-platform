@@ -60,9 +60,9 @@ function QuizModal({ quizzes,courseId,quizSetId,open,setOpen }) {
       await addQuizAssessment(courseId,quizSetId,answers);
       setOpen(false);
       router.refresh();
-      toast.success(`Thanks for submitting the quiz`); 
+      toast.success(`Gracias por enviar el cuestionario.`); 
     } catch (error) {
-      toast.error(`Problem is submitting the quiz`); 
+      toast.error(`Hubo un problema al enviar el cuestionario.`); 
     } 
   }
 

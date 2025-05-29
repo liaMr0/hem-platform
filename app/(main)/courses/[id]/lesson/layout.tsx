@@ -8,42 +8,56 @@ import { CourseSidebar } from "./_components/course-sidebar";
 import { getLoggedInUser } from "@/lib/loggedin-user";
 import { redirect } from "next/navigation";
 import { hasEnrollmentForCourse } from "@/queries/enrollments";
+import { ReactNode } from "react";
 
-const CourseLayout = async ({ children,params: {id} }) => {
+interface CourseLayoutProps {
+  children: ReactNode;
+  params: Promise<{ id: string }>;
+}
 
-  console.log(id);
+const CourseLayout = async ({ children, params }: CourseLayoutProps) => {
+  const { id } = await params;
   
-  const loggedinUser = await getLoggedInUser();
-  if (!loggedinUser) {
-    redirect("/login");
-  }
+  console.log("Course ID:", id);
 
-  const isEnrolled = await hasEnrollmentForCourse(id,loggedinUser.id);
-  if (!isEnrolled) {
-    redirect("/courses");
-  }
+  try {
+    const loggedinUser = await getLoggedInUser();
 
-  return (
-    <div className="">
-      <div className="h-[80px] lg:pl-96 fixed top-[60px] inset-y-0 w-full z-10">
-      <div className="flex lg:hidden p-4 border-b h-full items-center bg-white shadow-sm relative">
-          {/* Course Sidebar For Mobile */}
-          <CourseSidebarMobile courseId={id} />
-          {/* <NavbarRoutes /> */}
+    if (!loggedinUser) {
+      redirect("/login");
+    }
+
+    const isEnrolled = await hasEnrollmentForCourse(id, loggedinUser.id);
+
+    if (!isEnrolled) {
+      redirect("/courses");
+    }
+
+    return (
+      <div className="">
+        <div className="h-[80px] lg:pl-96 fixed top-[60px] inset-y-0 w-full z-10">
+          <div className="flex lg:hidden p-4 border-b h-full items-center bg-white shadow-sm relative">
+            {/* Barra lateral del curso para móvil */}
+            <CourseSidebarMobile courseId={id} />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12">
+          <div className="hidden lg:flex h-full w-96 flex-col inset-y-0 z-50">
+            {/* Barra lateral comienza */}
+            <CourseSidebar courseId={id} />
+            {/* Barra lateral termina */}
+          </div>
+          <main className="lg:pl-96 pt-[80px] lg:pt-[20px] h-full col-span-10 px-4">
+            {children}
+          </main>
         </div>
       </div>
-     
-      <div className="grid grid-cols-1 lg:grid-cols-12">
-      <div className="hidden lg:flex h-full w-96 flex-col inset-y-0 z-50">
-        {/* sidebar starts */}
-        <CourseSidebar courseId={id}/>
-        {/* sidebar ends */}
-      </div>
-      <main className="lg:pl-96 pt-[80px] lg:pt-[20px] h-full col-span-10 px-4">{children}</main>
-      </div>
-     
-      
-    </div>
-  );
+    );
+  } catch (error) {
+    console.error("Error en CourseLayout:", error);
+    redirect("/courses");
+  }
 };
+
 export default CourseLayout;

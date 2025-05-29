@@ -54,7 +54,7 @@ const AddCourse = () => {
     try {
       const course = await createCourse(values);
       router.push(`/dashboard/courses/${course?._id}`);
-      toast.success("Curso creado");
+      toast.success("Curso creado correctamente");
     } catch (error) {
       toast.error("Algo salió mal");
     }

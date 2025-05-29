@@ -16,42 +16,56 @@ import { replaceMongoIdInArray } from "@/lib/convertData";
 import { ObjectId } from "mongodb";
 import { ModuleActions } from "./_components/module-action";
 
-const Module = async ({ params:{courseId, moduleId} }:any) => {
+interface ModulePageProps {
+  params: {
+    courseId: string;
+    moduleId: string;
+  };
+}
 
+const Module = async ({ params: { courseId, moduleId } }: ModulePageProps) => {
+  // Obtener datos del módulo
   const module = await getModule(moduleId);
   const sanitizedModule = sanitizeData(module);
 
-  //console.log(module); 
-   
-  // Sanitize fucntion for handle ObjectID and Buffer
-  function sanitizeData(data:any) {
+  // Sanitize function for handle ObjectID and Buffer
+  function sanitizeData(data: any) {
     return JSON.parse(
       JSON.stringify(data, (key, value) => {
         if (value instanceof ObjectId) {
-            return value.toString();
+          return value.toString();
         }
         if (Buffer.isBuffer(value)) {
-          return value.toString("base64")
+          return value.toString("base64");
         }
         return value;
       })
     );
   }
+
+  // Obtener y sanitizar lecciones
+  const rawLessons = await replaceMongoIdInArray(module?.lessonIds).sort(
+    (a: any, b: any) => a.order - b.order
+  );
   
-   const rawlessons = await replaceMongoIdInArray(module?.lessonIds).sort((a:any,b:any) => a.order - b.order);
-  
-   const lessons = sanitizeData(rawlessons);
+  const lessons = sanitizeData(rawLessons).map((lesson: any) => ({
+    id: lesson.id || lesson._id,
+    title: lesson.title,
+    description: lesson.description,
+    video_url: lesson.video_url,
+    duration: lesson.duration,
+    active: lesson.active || false, // Asegurar que active esté definido
+    order: lesson.order,
+  }));
 
   return (
     <>
-
-    {
-      !module?.active && ( <AlertBanner
-        label="Este módulo no está publicado. No será visible en el curso."
-        variant="warning"
-      />
+      {!module?.active && (
+        <AlertBanner
+          label="Este módulo no está publicado. No será visible en el curso."
+          variant="warning"
+        />
       )}
-      
 
       <div className="p-6">
         <div className="flex items-center justify-between">
@@ -68,6 +82,7 @@ const Module = async ({ params:{courseId, moduleId} }:any) => {
             </div>
           </div>
         </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16">
           <div className="space-y-4">
             <div>
@@ -75,26 +90,24 @@ const Module = async ({ params:{courseId, moduleId} }:any) => {
                 <IconBadge icon={LayoutDashboard} />
                 <h2 className="text-xl">Personaliza tu módulo</h2>
               </div>
-              <ModuleTitleForm initialData={{title: module.title }} courseId={courseId} chapterId={moduleId} />
+              <ModuleTitleForm 
+                initialData={{ title: module.title }} 
+                courseId={courseId} 
+                chapterId={moduleId} 
+              />
             </div>
+
             <div>
               <div className="flex items-center gap-x-2">
                 <IconBadge icon={BookOpenCheck} />
                 <h2 className="text-xl">Lecciones del módulo</h2>
               </div>
-              <LessonForm initialData={lessons} moduleId={moduleId} courseId={courseId} /> 
+              <LessonForm 
+                initialData={lessons} 
+                moduleId={moduleId} 
+                courseId={courseId} 
+              />
             </div>
-          </div>
-          <div>
-            <div className="flex items-center gap-x-2">
-              {/* <IconBadge icon={Video} />
-              <h2 className="text-xl">Add a video</h2> */}
-            </div>
-            {/* <ChapterVideoForm
-              initialData={chapter}
-              courseId={params.courseId}
-              chapterId={params.chapterId}
-            /> */}
           </div>
         </div>
       </div>

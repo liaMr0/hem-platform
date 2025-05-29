@@ -31,7 +31,7 @@ export async function createLesson(data: FormData): Promise<ILesson>{
         return createdLesson;
         
     } catch (e) {
-        throw new Error(e);
+        throw new Error('Error creating lesson');
     }
 }
 
@@ -42,39 +42,43 @@ export async function reOrderLesson(data:any){
             await Lesson.findByIdAndUpdate(element.id, {order: element.position});
         }));
     } catch (e) {
-        throw new Error(e);
+        throw new Error('Error reordering lessons');
     }
 
 }
 
-export async function updateLesson(lessonId:any, data:any) {
+export async function updateLesson(lessonId: string, data: any) {
     try {
         await Lesson.findByIdAndUpdate(lessonId,data);
     } catch (error) {
-        throw new Error(e);
+        console.error('Error changing lesson publish state:', error);
+        throw new Error('No se pudo cambiar el estado de publicación');
     }
 }
 
-export async function changeLessonPublishState(lessonId:any) {
+
+export async function changeLessonPublishState(lessonId: string): Promise<boolean> {
+  try {
     const lesson = await Lesson.findById(lessonId);
-    try {
-        const res = await Lesson.findByIdAndUpdate(lessonId, {active: !lesson.active},{lean:true});
-        return res.active
-
-    } catch (error) {
-        throw new Error(error);
-    }
-
+    const newActiveState = !lesson.active;
+    
+    await updateLesson(lessonId, { active: newActiveState });
+    
+    return newActiveState; 
+  } catch (error) {
+    console.error('Error changing lesson publish state:', error);
+    throw new Error('No se pudo cambiar el estado de publicación');
+  }
 }
 
-export async function deleteLesson(lessonId, moduleId){
+export async function deleteLesson(lessonId: string, moduleId: string) {
     try {
         const module = await Module.findById(moduleId);
         module.lessonIds.pull(new mongoose.Types.ObjectId(lessonId));
         await Lesson.findByIdAndDelete(lessonId);
         module.save();
     } catch (err) {
-        throw new Error(err);
+        throw new Error('Error deleting lesson');
     }
 }
 

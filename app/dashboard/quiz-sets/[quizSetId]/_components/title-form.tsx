@@ -42,7 +42,7 @@ export const TitleForm = ({ initialData = {},quizSetId }) => {
   const onSubmit = async (values) => {
     try {
       await updateQuizSet(quizSetId,values)
-      toast.success("Quize Tittle Updated");
+      toast.success("Título del cuestionario actualizado");
       toggleEdit();
       router.refresh();
     } catch (error) {
@@ -53,14 +53,14 @@ export const TitleForm = ({ initialData = {},quizSetId }) => {
   return (
     <div className="mt-6 border bg-gray-50 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
-        Quiz set title
+        Título del conjunto de preguntas
         <Button variant="ghost" onClick={toggleEdit}>
           {isEditing ? (
-            <>Cancel</>
+            <>Cancelar</>
           ) : (
             <>
               <Pencil className="h-4 w-4 mr-2" />
-              Edit Title
+              Editar título
             </>
           )}
         </Button>
@@ -90,7 +90,7 @@ export const TitleForm = ({ initialData = {},quizSetId }) => {
             />
             <div className="flex items-center gap-x-2">
               <Button disabled={!isValid || isSubmitting} type="submit">
-                Save
+                Guardar
               </Button>
             </div>
           </form>

@@ -5,14 +5,16 @@ const LoginPage = async() => {
   const session = await auth();
 
   if (session?.user) {
-    const role = session.user.role;
-    if (role === 'admin') {
-      redirect('/dashboard');
-    } else if (role === 'instructor') {
-      redirect('/');
-    }else if (role === 'student') {
-      redirect('/');
-    }
+    console.log(session?.user);
+    redirect('/');
+    // const role = session.user.role;
+    // if (role === 'admin') {
+    //   redirect('/dashboard');
+    // } else if (role === 'instructor') {
+    //   redirect('/');
+    // }else if (role === 'student') {
+    //   redirect('/');
+    // }
   }
 
   return (

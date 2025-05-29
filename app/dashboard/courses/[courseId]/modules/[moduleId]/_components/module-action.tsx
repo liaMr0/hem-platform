@@ -53,7 +53,7 @@ export const ModuleActions = ({ module,courseId }:any) => {
         {published ? "Despublicar" : "Publicar"}
       </Button>
 
-      <Button size="sm" onClick={() => setAction("delete")}>
+      <Button variant="destructive" size="sm" onClick={() => setAction("delete")}>
         <Trash className="h-4 w-4" />
       </Button>
     </div>   

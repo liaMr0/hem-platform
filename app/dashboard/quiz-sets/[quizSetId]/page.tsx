@@ -42,7 +42,7 @@ const EditQuizSet = async ({ params: {quizSetId} }:any) => {
     <>
     {
       !quizSet.active && <AlertBanner
-      label="This Quiz is unpublished. It will not be visible in the course."
+      label="Este cuestionario no está publicado. No será visible en el curso."
       variant="warning"
     />
     }
@@ -54,11 +54,11 @@ const EditQuizSet = async ({ params: {quizSetId} }:any) => {
         <div className="grid grid-cols-1 lg:grid-cols-2  gap-6 mt-16">
           {/* Quiz List */}
           <div className="max-lg:order-2">
-            <h2 className="text-xl mb-6">Quiz List</h2>
+            <h2 className="text-xl mb-6">Lista de cuestionarios</h2>
       {
         quizzes.length === 0 && (
              <AlertBanner
-              label="No Quiz are in the set, add some using the form above."
+              label="No hay cuestionarios en el conjunto, añada algunos utilizando el formulario de arriba."
               variant="warning"
               className="rounded mb-6"
             />
@@ -106,7 +106,7 @@ const EditQuizSet = async ({ params: {quizSetId} }:any) => {
           {/*  */}
           <div>
             <div className="flex items-center gap-x-2">
-              <h2 className="text-xl">Customize your quiz set</h2>
+              <h2 className="text-xl">Personalice su conjunto de preguntas</h2>
             </div>
             <div className="max-w-[800px]">
               <TitleForm

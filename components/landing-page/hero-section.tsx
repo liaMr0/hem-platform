@@ -1,7 +1,9 @@
-import React from 'react';
+'use cli'
 import { Badge } from '../ui/badge';
 import { ChevronRight, Sparkles } from 'lucide-react';
 import { Button } from '../ui/button';
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
 const HeroSection = () => {
     return (
@@ -24,12 +26,19 @@ const HeroSection = () => {
               colaborativa diseñada para mejorar tu práctica docente en entornos educativos híbridos.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button size="lg" className="w-full sm:w-auto text-base font-medium px-8 py-6">
-                Únete Gratis
-              </Button>
-              <Button size="lg" variant="outline" className="w-full sm:w-auto text-base font-medium px-8 py-6">
-                Saber Más <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
+            <Link href="/register/student" passHref>
+                <Button
+                  size="lg"
+                  className="w-full sm:w-auto text-base font-medium px-8 py-6"
+                >
+                  Únete Gratis
+                </Button>
+              </Link>
+              <Link href="#resources" passHref>
+                <Button size="lg" variant="outline" className="w-full sm:w-auto text-base font-medium px-8 py-6">
+                  Saber Más <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

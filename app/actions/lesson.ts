@@ -5,7 +5,17 @@ import { Module } from "@/model/module.model";
 import { create } from "@/queries/lessons";
 import mongoose from "mongoose";
 
-export async function createLesson(data:any){
+interface ILesson extends Document {
+    title: string;
+    description?: string;
+    duration: number;
+    video_url?: string;
+    active: boolean;
+    slug: string;
+    order: number;
+  }
+
+export async function createLesson(data: FormData): Promise<ILesson>{
     try {
         const title = data.get("title");
         const slug = data.get("slug");

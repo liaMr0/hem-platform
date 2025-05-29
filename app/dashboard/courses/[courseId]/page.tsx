@@ -20,8 +20,8 @@ import { ObjectId } from "mongodb";
 import { getAllQuizSets } from "@/queries/quizzes";
 import { FileUploadForm } from "./_components/file-upload";
  
-const EditCourse = async ({ params: {courseId} }:any) => {
- 
+const EditCourse = async ({ params }: { params: { courseId: string } }) => {
+  const { courseId } = await params;
   const course = await getCourseDetails(courseId);
 
   // Sanitize function for handle ObjectID and Buffer
@@ -92,15 +92,7 @@ const EditCourse = async ({ params: {courseId} }:any) => {
             <ImageForm initialData={{imageUrl: `/assets/images/courses/${course?.thumbnail}`}} courseId={courseId} />
             
             {/* Componente actualizado para subida de múltiples archivos */}
-            <FileUploadForm 
-              initialData={{
-                documents: documents
-              }} 
-              courseId={courseId} 
-            />
-            
-            <QuizSetForm initialData={{ quizSetId: course?.quizSet?._id.toString() }} courseId={courseId} options={mappedQuizSet} />
-          </div>
+                   </div>
           <div className="space-y-6">
             <div> 
               <div className="flex items-center gap-x-2 mb-6">
@@ -108,7 +100,16 @@ const EditCourse = async ({ params: {courseId} }:any) => {
                 <h2 className="text-xl">Módulos del curso</h2>
               </div>
 
-              <ModulesForm initialData={modules} courseId={courseId} /> 
+              <ModulesForm initialData={modules} courseId={courseId} />
+              <FileUploadForm 
+              initialData={{
+                documents: documents
+              }} 
+              courseId={courseId} 
+            />
+            
+            <QuizSetForm initialData={{ quizSetId: course?.quizSet?._id.toString() }} courseId={courseId} options={mappedQuizSet} />
+ 
             </div>
            
           </div>

@@ -51,7 +51,7 @@ export const QuizSetAction = ({ quizSetId,quiz,quizId }) => {
     <form onSubmit={handleSubmit}>
     <div className="flex items-center gap-x-2">
       <Button variant="outline" size="sm" onClick={() => setAction("change-active")}>
-        {published ? "Unpublish" : "Publish"}
+        {published ? "Despublicar" : "Publicar"}
       </Button>
 
       <Button type="submit" name="action" value="delete" size="sm" onClick={() => setAction("delete")}>

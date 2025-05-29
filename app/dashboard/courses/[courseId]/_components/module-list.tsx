@@ -85,7 +85,7 @@ export const ModuleList = ({ items, onReorder, onEdit }) => {
                           module.active && "bg-emerald-600"
                         )}
                       >
-                        {module.active ? "Publicar" : "Borrador"}
+                        {module.active ? "Publicado" : "Borrador"}
                       </Badge>
                       <Pencil
                         onClick={() => onEdit(module.id)}

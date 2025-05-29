@@ -30,11 +30,11 @@ export default async function RootLayout({
 
 
   return (
-    <html lang="en" >
+    <html lang="es" suppressHydrationWarning>
       <body 
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-       <ThemeProvider  attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+       <ThemeProvider  attribute="class" defaultTheme="light" disableTransitionOnChange>
           {children}
         </ThemeProvider>
         <Toaster richColors position="top-center" />

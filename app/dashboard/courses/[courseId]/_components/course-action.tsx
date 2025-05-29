@@ -52,7 +52,7 @@ export const CourseActions = ({ courseId,isActive }) => {
     <form onSubmit={handleSubmit}>
     <div className="flex items-center gap-x-2">
       <Button variant="outline" size="sm" onClick={() => setAction("change-active")}>
-        {published ? "No publicar" : "Publicar"}
+        {published ? "Publicar" : "Despublicar"}
       </Button>
 
       <Button size="sm" onClick={() => setAction("delete")}>

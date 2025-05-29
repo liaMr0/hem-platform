@@ -11,12 +11,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'; 
 import MobileNav from './mobile-nav';
 import { useSession , signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 const MainNav = ({items,children}) => {
     const {data:session} = useSession();
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [loginSession, setLoginSession] = useState(null);
-
+    const router = useRouter();
     const [loggedInUser, setLoggedInUser] = useState(null);
 
     useEffect(() => { 
@@ -76,16 +77,9 @@ const MainNav = ({items,children}) => {
                 </Link>
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">Registrarse</Button>
+            <Button variant="outline" size="sm" onClick={() => router.push('/register/student')}>Registrarse</Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 mt-4">
-            <DropdownMenuItem className="cursor-pointer">
-                <Link href='/register/student'>Estudiante</Link> 
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
-                <Link href='/register/instructor'>Instructor</Link> 
-            </DropdownMenuItem> 
-        </DropdownMenuContent>  
+      
     </DropdownMenu> 
             </div> 
             )

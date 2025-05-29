@@ -35,7 +35,7 @@ export function LoginForm() {
           console.log(response.error)
           setError("Ha ocurrido un error.");
       } else {
-        toast.success("Login Successfuly!");
+        toast.success("Ha iniciado sesión correctamente");
         router.push("/")
       }      
     } catch (e) {
@@ -102,7 +102,7 @@ export function LoginForm() {
         <div className="mt-4 text-center text-sm">
           ¿No tienes cuenta?{" "}
           <Link href="/register/student" className="underline">
-          Estudiante
+          Registrarse
           </Link>
          
         </div>

@@ -4,7 +4,7 @@ import { Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { changeQuizPublishState, deleteQuiz } from "@/app/actions/quiz";
+import { changeQuizPublishState, deleteQuizSet } from "@/app/actions/quiz";
 import { toast } from "sonner";
 
 export const QuizSetAction = ({ quizSetId, quiz, quizId }) => {
@@ -27,7 +27,7 @@ export const QuizSetAction = ({ quizSetId, quiz, quizId }) => {
           if (published) {
             toast.error("No se puede eliminar un cuestionario publicado. Primero despublica, luego elimina.");
           } else {
-            await deleteQuiz(quizSetId, quizId);
+            await deleteQuizSet(quizSetId);
             toast.success("El cuestionario ha sido eliminado");
             router.push(`/dashboard/quiz-sets`);
           }

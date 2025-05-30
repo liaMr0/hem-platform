@@ -18,7 +18,7 @@ export async function updateQuizSet(quizset, dataToUpdate){
     }
 }
 
-export async function addQuizToQuizSet(quizSetId, quizData){
+export async function addQuizToQuizSet(quizSetId:string, quizData:any){
     try {
         //console.log(quizSetId,quizData);
     const transformedQuizData = {};
@@ -56,7 +56,7 @@ export async function addQuizToQuizSet(quizSetId, quizData){
 }
 
 
-export async function deleteQuiz(quizSetId, quizId) {
+export async function deleteQuiz(quizSetId:string, quizId:string) {
     try {
 
         await Quizset.findByIdAndUpdate(quizSetId, {
@@ -66,12 +66,32 @@ export async function deleteQuiz(quizSetId, quizId) {
         await Quiz.findByIdAndDelete(quizId);
         
     } catch (error) {
-        throw new Error(error);
+        throw new Error(error as string);
     }
 }
 
 
-export async function changeQuizPublishState(quizSetId) {
+export async function deleteQuizSet(quizSetId:string) {
+  try {
+    const quizSet = await Quizset.findById(quizSetId);
+
+    if (!quizSet) {
+      throw new Error("QuizSet no encontrado");
+    }
+
+    // Elimina todos los quizzes asociados
+    await Quiz.deleteMany({ _id: { $in: quizSet.quizIds } });
+
+    // Elimina el quiz set
+    await Quizset.findByIdAndDelete(quizSetId);
+  } catch (error) {
+    console.error("Error eliminando quiz set:", error);
+    throw new Error(error.message || "Error al eliminar el quiz set");
+  }
+}
+
+
+export async function changeQuizPublishState(quizSetId:string) {
     const quiz = await Quizset.findById(quizSetId);
     try {
         const res = await Quizset.findByIdAndUpdate(quizSetId, {active: !quiz.active},{lean: true});
@@ -92,7 +112,7 @@ export async function doCreateQuizSet(data){
 
 }
 
-export async function addQuizAssessment(courseId,quizSetId,answers) {
+export async function addQuizAssessment(courseId:string,quizSetId:string,answers:any) {
     try {
         console.log(quizSetId,answers);
         const quizSet = await getQuizSetById(quizSetId);

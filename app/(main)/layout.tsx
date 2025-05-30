@@ -1,8 +1,8 @@
+import { auth } from '@/auth';
 import MainNav from '@/components/main-nav';
 import SiteFooter from '@/components/site-footer';
+import { redirect } from 'next/navigation';
 import React from 'react';
-import { SessionProvider } from "next-auth/react"
-import { Heading1 } from 'lucide-react';
 
 const navLinks = [
     { 
@@ -20,16 +20,27 @@ const navLinks = [
     
   ];
 
-  const MainLayout = ({children}) => {
+  const MainLayout = async({children}:any) => {
+    // const session = await auth();
+    
+    //   if (!session?.user) {
+    //     console.log(session?.user);
+    //     redirect('/');}
+    //     // const role = session.user.role;
+    //     // if (role === 'admin') {
+    //     //   redirect('/dashboard');
+    //     // } else if (role === 'instructor') {
+    //     //   redirect('/');
+    //     // }else if (role === 'student') {
+    //     //   redirect('/');
+    //     // }
     return ( 
     <div className='flex min-h-screen flex-col'>
       <header className='z-40 bg-background/60 backdrop-blur-md fixed top-0 left-0 right-0 border-b'>
         
-        <SessionProvider>
         <div className='container flex h-20 items-center justify-between py-6'>
             <MainNav items={navLinks} />
         </div>
-        </SessionProvider>
 
       </header>
       

@@ -1,6 +1,6 @@
 // app/api/users/route.ts
+import { getFilteredUsers } from '@/app/actions/users';
 import { NextRequest, NextResponse } from 'next/server';
-import { getFilteredUsers } from '@/lib/users'; // Ajusta la ruta según tu estructura
 
 export async function GET(request: NextRequest) {
   try {

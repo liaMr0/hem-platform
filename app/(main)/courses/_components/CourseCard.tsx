@@ -1,10 +1,6 @@
 import React from 'react';
 import Image from "next/image";
 import Link from "next/link";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import { formatPrice } from "@/lib/formatPrice";
-import { ArrowRightIcon } from "lucide-react";
 import { BookOpen } from "lucide-react";
 import EnrollCourse from '@/components/enroll-course';
  

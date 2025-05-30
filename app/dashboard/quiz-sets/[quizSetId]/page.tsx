@@ -17,8 +17,8 @@ import { getQuizSetById } from "@/queries/quizzes";
 import { QuizCardActions } from "./_components/quiz-card-action";
 
  
-const EditQuizSet = async ({ params: {quizSetId} }:any) => {
-
+const EditQuizSet = async ({ params }:any) => {
+const { quizSetId } = await params;
   const quizSet = await getQuizSetById(quizSetId);
   
 

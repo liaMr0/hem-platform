@@ -4,6 +4,7 @@ import "./globals.css";
 import { dbConnect } from "@/service/mongo";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "next-themes";
+import { SessionProvider } from "next-auth/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,15 +29,16 @@ export default async function RootLayout({
   const conn = await dbConnect();
   // console.log(conn)
 
-
   return (
     <html lang="es" suppressHydrationWarning>
       <body 
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-       <ThemeProvider  attribute="class" defaultTheme="light" disableTransitionOnChange>
-          {children}
-        </ThemeProvider>
+      <SessionProvider>
+        <ThemeProvider  attribute="class" defaultTheme="light" disableTransitionOnChange>
+            {children}
+          </ThemeProvider>
+        </SessionProvider>
         <Toaster richColors position="top-center" />
       </body>
     </html>

@@ -9,7 +9,7 @@ const authOptions: NextAuthConfig = {
   ...authConfig,
   providers: [
     CredentialsProvider({
-      async authorize(credentials:any) {
+      async authorize(credentials: any) {
         if (!credentials) return null;
 
         try {
@@ -19,12 +19,14 @@ const authOptions: NextAuthConfig = {
             const isMatch = await bcrypt.compare(credentials.password, user.password);
 
             if (isMatch) {
-          
+              // Retorna todos los datos necesarios desde authorize
               return {
                 id: user._id.toString(),
-                name: user.name,
+                name: `${user.firstName} ${user.lastName}`, // Combina firstName y lastName
                 email: user.email,
-                role: user.role
+                role: user.role,
+                firstName: user.firstName,
+                lastName: user.lastName
               };
             } else {
               console.error("Password Mismatch");
@@ -44,6 +46,32 @@ const authOptions: NextAuthConfig = {
 
   session: {
     strategy: "jwt" as const
+  },
+
+  callbacks: {
+    // El callback jwt se ejecuta cada vez que se crea o actualiza un JWT
+    async jwt({ token, user }) {
+      // Si user existe (primera vez que se autentica), añade la info al token
+      if (user) {
+        token.id = user.id;
+        token.role = user.role;
+        token.firstName = user.firstName;
+        token.lastName = user.lastName;
+      }
+      return token;
+    },
+
+    // El callback session se ejecuta cada vez que se accede a la sesión
+    async session({ session, token }) {
+      // Añade la información del token a la sesión
+      if (token) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+        session.user.firstName = token.firstName as string;
+        session.user.lastName = token.lastName as string;
+      }
+      return session;
+    }
   }
 };
 

@@ -1,14 +1,11 @@
- 
-import { formatPrice } from "@/lib/formatPrice";
 import CourseDetailsIntro from "./_components/CourseDetailsIntro";
 import CourseDetails from "./_components/CourseDetails";
 import Testimonials from "./_components/Testimonials";
 import { getCourseDetails } from "@/queries/courses";
 import { replaceMongoIdInArray } from "@/lib/convertData";
-// import MoneyBack from "@/components/money-back";
  
-const SingleCoursePage = async ({ params: {id} }:any) => {
-
+const SingleCoursePage = async ({ params}:any) => {
+    const { id } = await params;
     const course = await getCourseDetails(id);
     const currentCourseId = course.id.toString();
     console.log(course);

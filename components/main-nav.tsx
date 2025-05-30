@@ -3,7 +3,6 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import Logo from './logo';
 import { cn } from '@/lib/utils';
-
 import { X } from 'lucide-react';
 import { Button, buttonVariants } from './ui/button';
 import { Menu } from 'lucide-react';
@@ -12,13 +11,15 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import MobileNav from './mobile-nav';
 import { useSession , signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useUserAvatar } from '@/contexts/UserAvatarContext';
 
-const MainNav = ({items,children}) => {
+const MainNav = ({items,children}:any) => {
     const {data:session} = useSession();
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [loginSession, setLoginSession] = useState(null);
     const router = useRouter();
     const [loggedInUser, setLoggedInUser] = useState(null);
+    const { avatarUrl } = useUserAvatar();
 
     useEffect(() => { 
         setLoginSession(session);
@@ -92,7 +93,7 @@ const MainNav = ({items,children}) => {
         <DropdownMenuTrigger asChild>
             <div className='cursor-pointer'>
     <Avatar>
-    <AvatarImage src={loggedInUser?.profilePicture} alt="@ariyan" />
+    <AvatarImage src={avatarUrl} alt="Avatar del usuario" />
     <AvatarFallback>CN</AvatarFallback> 
     </Avatar>
             </div> 

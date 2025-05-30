@@ -1,78 +1,42 @@
-import React from 'react';
+"use client";
 
-import Image from "next/image";
-import Link from "next/link"; 
-import Menu from './account-menu';
-import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
-import { getUserByEmail } from '@/queries/users';
+import React from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Menu from "./account-menu";
+import AvatarUpload from "./AvatarUpload";
 
-const AccountSidebar = async () => {
-    const session = await auth();
-  
-    // Redirigir si no hay sesión o usuario
-    if (!session?.user) {
-      redirect("/login");
-       }
-  
-    // Validar que el email no sea null o undefined
-    const email = session.user.email;
-    if (!email) {
-      throw new Error("User email is missing"); // Manejo explícito del caso de error
-    }
-  
-    // Llamar a la función con un email garantizado como string
-    const loggedInUser = await getUserByEmail(email);
-    console.log(loggedInUser);
-    
-    
-    return (
-<div className="lg:w-1/4 md:px-3">
-<div className="relative">
-    <div className="p-6 rounded-md shadow dark:shadow-gray-800 bg-white dark:bg-slate-900">
-        <div className="profile-pic text-center mb-5">
-            <input
-                id="pro-img"
-                name="profile-image"
-                type="file"
-                className="hidden"
-                    
-            />
+const AccountSidebar = () => {
+  const { data: session } = useSession();
+
+   
+  return (
+    <div className="lg:w-1/4 md:px-3">
+      <div className="relative">
+        <div className="p-6 rounded-md shadow dark:shadow-gray-800 bg-white dark:bg-slate-900">
+          <div className="profile-pic text-center mb-5">
             <div>
-                <div className="relative size-28 mx-auto">
-                <Image
-                        src={loggedInUser?.profilePicture}
-                        className="rounded-full shadow dark:shadow-gray-800 ring-4 ring-slate-50 dark:ring-slate-800"
-                        id="profile-banner"
-                        alt={`${loggedInUser?.firstName}`}
-                        width={112}
-                        height={112}
-                    />
-                    <label
-                        className="absolute inset-0 cursor-pointer"
-                        htmlFor="pro-img"
-                    />
-                </div>
-                <div className="mt-4">
-                    <h5 className="text-lg font-semibold">
-         {`${loggedInUser?.firstName} ${loggedInUser?.lastName}`}
-                    </h5>
-                    <p className="text-slate-400">
-                    {loggedInUser?.email}
-                    </p>
-                    <p className="text-slate-700 text-sm font-bold">
-                    Rol: {loggedInUser?.role}
-                    </p>
-                </div>
+              <div className="flex justify-center mb-4">
+                <AvatarUpload 
+                  size={112}
+                  showUploadIcon={true}
+                  clickable={true}
+                />
+              </div>
+              <div className="mt-4">
+                <h5 className="text-lg font-semibold">{`${session?.user.name}`}</h5>
+                <p className="text-slate-400">{session?.user.email}</p>
+                <p className="text-slate-700 text-sm font-bold">Rol: {session?.user.role}</p>
+              </div>
             </div>
-        </div>
-        <div className="border-t border-gray-100 dark:border-gray-700">
+          </div>
+          <div className="border-t border-gray-100 dark:border-gray-700">
             <Menu />
+          </div>
         </div>
+      </div>
     </div>
-</div>
-</div>
-    );
+  );
 };
 
 export default AccountSidebar;

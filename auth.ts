@@ -26,7 +26,8 @@ const authOptions: NextAuthConfig = {
                 email: user.email,
                 role: user.role,
                 firstName: user.firstName,
-                lastName: user.lastName
+                lastName: user.lastName,
+                image: user.profilePicture
               };
             } else {
               console.error("Password Mismatch");
@@ -57,6 +58,7 @@ const authOptions: NextAuthConfig = {
         token.role = user.role;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
+        token.image = user.image; // Añade la imagen del perfil
       }
       return token;
     },
@@ -69,6 +71,7 @@ const authOptions: NextAuthConfig = {
         session.user.role = token.role as string;
         session.user.firstName = token.firstName as string;
         session.user.lastName = token.lastName as string;
+        session.user.image = token.image as string; // Añade la imagen del perfil
       }
       return session;
     }

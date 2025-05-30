@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useUserAvatar } from "@/contexts/UserAvatarContext";
 
 interface UserData {
   profilePicture?: string;
@@ -23,7 +24,7 @@ interface UserData {
 export const Navbar = () => {
   const router = useRouter();
   const [loggedInUser, setLoggedInUser] = useState<UserData | null>(null);
-
+const { avatarUrl } = useUserAvatar();
   useEffect(() => {  
     async function fetchMe() {
       try {
@@ -46,7 +47,7 @@ export const Navbar = () => {
             <div className="cursor-pointer">
               <Avatar>
                 <AvatarImage
-                  src={loggedInUser?.profilePicture}
+                  src={avatarUrl}
                   alt="User avatar"
                 />
                 <AvatarFallback>

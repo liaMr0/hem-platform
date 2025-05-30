@@ -3,7 +3,7 @@ import { SignupForm } from '../_components/signup-form';
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
-export default async function RegisterPage({ params }) {
+export default async function RegisterPage({ params }: any) {
   // Extraer el rol de los parámetros
   const  { role } = await params || {};
   const session = await auth();

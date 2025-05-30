@@ -85,14 +85,16 @@ export function SignupForm({ role }: any) {
         })
       });
 
-      if (response.status === 201) {
-        toast.success("¡Te has registrado con éxito!");
-        reset(); // Limpiar el formulario
-        router.push("/login");
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || "Error al registrarse");
-      }
+        if (response.status === 201) {
+      toast.success("¡Te has registrado con éxito!");
+      reset();
+      router.push("/login");
+    } else if (response.status === 409) {
+      toast.error("El correo electrónico ya está en uso");
+    } else {
+      const errorData = await response.text(); // No siempre será JSON
+      toast.error(errorData || "Error al registrarse");
+    }
 
     } catch (error) {
       console.error("Error:", error);

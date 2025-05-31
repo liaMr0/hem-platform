@@ -11,40 +11,55 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { credentialLogin } from "@/app/actions";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { signIn } from "next-auth/react";
 
 export function LoginForm() {
-
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
   const [showPassword, setShowPassword] = useState(false);
 
-  async function onSubmit(event:any) {
+  async function onSubmit(event: any) {
     event.preventDefault();
+    setIsLoading(true);
+    setError('');
 
     try {
       const formData = new FormData(event.currentTarget);
-      const response = await credentialLogin(formData);
+      const email = formData.get('email') as string;
+      const password = formData.get('password') as string;
 
-      if (!!response.error) {
-          console.log(response.error)
-          setError("Ha ocurrido un error.");
-      } else {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false, // No redirigir automáticamente
+      });
+
+      if (result?.error) {
+        console.log('Login error:', result.error);
+        setError("Credenciales incorrectas. Verifica tu email y contraseña.");
+        toast.error("Credenciales incorrectas");
+      } else if (result?.ok) {
         toast.success("Ha iniciado sesión correctamente");
-        router.push("/")
-      }      
+        
+        // Esperar un poco para que la sesión se actualice
+        setTimeout(() => {
+          router.push("/");
+          router.refresh(); // Forzar actualización
+        }, 100);
+      }
     } catch (e) {
-      setError((e as Error).message);
-      toast.error("Ha ocurrido un error.")
+      console.error('Login error:', e);
+      setError("Ha ocurrido un error inesperado.");
+      toast.error("Ha ocurrido un error");
+    } finally {
+      setIsLoading(false);
     }
   }
-
-
 
   return (
     <Card className="mx-auto max-w-sm w-full">
@@ -63,6 +78,12 @@ export function LoginForm() {
       <CardContent>
         <form onSubmit={onSubmit} >
         <div className="grid gap-4">
+          {error && (
+            <div className="p-3 text-sm text-red-500 bg-red-50 border border-red-200 rounded-md dark:bg-red-900/10 dark:border-red-800 dark:text-red-400">
+              {error}
+            </div>
+          )}
+          
           <div className="grid gap-2">
             <Label htmlFor="email">Correo</Label>
             <Input
@@ -71,6 +92,7 @@ export function LoginForm() {
               type="email"
               placeholder="m@example.com"
               required
+              disabled={isLoading}
             />
           </div>
           <div className="grid gap-2">
@@ -81,11 +103,19 @@ export function LoginForm() {
               </Link> */}
             </div>
             <div className="relative">
-              <Input className="pr-10" id="password" name="password" type={showPassword ? "text" : "password"} required />
+              <Input 
+                className="pr-10" 
+                id="password" 
+                name="password" 
+                type={showPassword ? "text" : "password"} 
+                required 
+                disabled={isLoading}
+              />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 disabled:opacity-50"
                 onClick={() => setShowPassword(!showPassword)}
+                disabled={isLoading}
               >
                 {showPassword ? (
                   <Eye className="h-5 w-5" />
@@ -95,8 +125,15 @@ export function LoginForm() {
               </button>
             </div>
           </div>
-          <Button type="submit" className="w-full">
-          Acceder
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Iniciando sesión...
+              </>
+            ) : (
+              'Acceder'
+            )}
           </Button>
         </div>
         <div className="mt-4 text-center text-sm">

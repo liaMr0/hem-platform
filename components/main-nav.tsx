@@ -3,6 +3,7 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import Logo from './logo';
 import { cn } from '@/lib/utils';
+
 import { X } from 'lucide-react';
 import { Button, buttonVariants } from './ui/button';
 import { Menu } from 'lucide-react';
@@ -13,24 +14,26 @@ import { useSession , signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useUserAvatar } from '@/contexts/UserAvatarContext';
 
-const MainNav = ({items,children}:any) => {
-    const {data:session} = useSession();
+const MainNav = ({items,children}) => {
+    const {data:session, status} = useSession();
     const [showMobileMenu, setShowMobileMenu] = useState(false);
-    const [loginSession, setLoginSession] = useState(null);
     const router = useRouter();
     const [loggedInUser, setLoggedInUser] = useState(null);
     const { avatarUrl } = useUserAvatar();
 
     useEffect(() => { 
-        setLoginSession(session);
         async function fetchMe() {
-            try {
-                const response = await fetch("/api/me");
-                const data = await response.json();
-               // console.log(data);
-                setLoggedInUser(data);
-            } catch (error) {
-                console.log(error)
+            if (session?.user?.email) {
+                try {
+                    const response = await fetch("/api/me");
+                    const data = await response.json();
+                    setLoggedInUser(data);
+                } catch (error) {
+                    console.log(error);
+                    setLoggedInUser(null);
+                }
+            } else {
+                setLoggedInUser(null);
             }
         }
         fetchMe();
@@ -71,7 +74,7 @@ const MainNav = ({items,children}:any) => {
     <nav className='flex items-center gap-3 pr-8'>
         
         {
-            !loginSession && (
+            !session && status !== "loading" && (
                 <div className='items-center gap-3 hidden lg:flex'>
                 <Link href='/login' className={cn(buttonVariants({size: "sm"}), "px-4")}>
                     Iniciar sesión
@@ -88,7 +91,7 @@ const MainNav = ({items,children}:any) => {
         
        
 
-    {loginSession && (
+    {session && (
         <DropdownMenu>
         <DropdownMenuTrigger asChild>
             <div className='cursor-pointer'>
@@ -119,7 +122,7 @@ const MainNav = ({items,children}:any) => {
             <Link href=''></Link> 
         </DropdownMenuItem>  */}
         <DropdownMenuItem className="cursor-pointer" asChild>
- <Link href='' onClick={(e) => {e.preventDefault(); signOut(); }} >Cerrar Sesión</Link> 
+            <Link href='' onClick={(e) => {e.preventDefault(); signOut(); }} >Cerrar Sesión</Link> 
         </DropdownMenuItem> 
     </DropdownMenuContent>   
 

@@ -35,7 +35,7 @@ export default async function RootLayout({
       <body 
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-      <SessionProvider>
+      <SessionProvider refetchInterval={0} refetchOnWindowFocus={true}>
         <UserAvatarProvider>
         <ThemeProvider  attribute="class" defaultTheme="light" disableTransitionOnChange>
             {children}

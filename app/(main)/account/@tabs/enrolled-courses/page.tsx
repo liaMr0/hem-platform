@@ -1,4 +1,3 @@
-// 1. Fix EnrolledCourses component - handle missing course data
 import EnrolledCourseCard from "../../component/enrolled-coursecard";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
@@ -12,41 +11,68 @@ async function EnrolledCourses() {
         redirect("/login");
     }
 
-    const loggedInUser = await getUserByEmail(session?.user?.email);
-     
-    const enrollments = await getEnrollmentsForUser(loggedInUser?.id)
-    console.log(enrollments);
+    try {
+        const loggedInUser = await getUserByEmail(session?.user?.email);
+        
+        if (!loggedInUser?.id) {
+            console.error('No se pudo obtener el usuario logueado');
+            return (
+                <div className="grid sm:grid-cols-2 gap-6">
+                    <p className="font-bold text-red-700">Error: No se pudo cargar la información del usuario</p>
+                </div>
+            );
+        }
+         
+        const enrollments = await getEnrollmentsForUser(loggedInUser.id);
+        console.log("Enrollments data:", enrollments);
 
-    return (
-        <div className="grid sm:grid-cols-2 gap-6">
-            {
-                enrollments && enrollments.length > 0 ? (
-                    <>
-                        {enrollments.map((enrollment) => {
-                            // Add safety checks for course data
-                            if (!enrollment?.course?._id && !enrollment?.course?.id) {
-                                console.warn('Enrollment missing course data:', enrollment);
-                                return null;
-                            }
-                            
-                            const courseId = enrollment.course._id || enrollment.course.id;
-                            
-                            return (
-                                <Link
-                                    key={enrollment?.id}
-                                    href={`/courses/${courseId}/lesson`}
-                                > 
-                                    <EnrolledCourseCard key={enrollment?.id} enrollment={enrollment} />
-                                </Link>
-                            );
-                        })}
-                    </>
-                ) : (
-                    <p className="font-bold text-red-700">No se encontraron cursos matriculados</p>
-                )
+        // Filtrar enrollments válidos
+        const validEnrollments = enrollments?.filter(enrollment => {
+            const courseId = enrollment?.course?.id || enrollment?.course?._id;
+            const hasValidCourse = courseId && enrollment?.course?.title;
+            
+            if (!hasValidCourse) {
+                console.warn('Enrollment with invalid course data:', enrollment);
             }
-        </div>
-    );
+            
+            return hasValidCourse;
+        }) || [];
+
+        return (
+            <div className="grid sm:grid-cols-2 gap-6">
+                {validEnrollments.length > 0 ? (
+                    validEnrollments.map((enrollment) => {
+                        const courseId = enrollment?.course?.id || enrollment?.course?._id;
+                        const enrollmentId = enrollment?.id || enrollment?._id;
+                        
+                        return (
+                            <Link
+                                key={enrollmentId}
+                                href={`/courses/${courseId}/lesson`}
+                            > 
+                                <EnrolledCourseCard 
+                                    enrollment={enrollment} 
+                                />
+                            </Link>
+                        );
+                    })
+                ) : (
+                    <div className="col-span-full">
+                        <p className="font-bold text-red-700 text-center">
+                            No se encontraron cursos matriculados
+                        </p>
+                    </div>
+                )}
+            </div>
+        );
+    } catch (error) {
+        console.error('Error in EnrolledCourses:', error);
+        return (
+            <div className="grid sm:grid-cols-2 gap-6">
+                <p className="font-bold text-red-700">Error al cargar los cursos matriculados</p>
+            </div>
+        );
+    }
 }
 
 export default EnrolledCourses;

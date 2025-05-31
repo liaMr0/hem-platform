@@ -12,20 +12,42 @@ export async function getEnrollmentsForCourse(courseId: string) {
 
 export async function getEnrollmentsForUser(userId: string) {
     try {
+        if (!userId) {
+            throw new Error('User ID is required');
+        }
+
         const enrollments = await Enrollment.find({ student: userId})
             .populate({
                 path: "course",
                 model: Course,
                 select: "_id title thumbnail category modules active" // Solo campos necesarios
             })
+            .populate({
+                path: "student",
+                model: User,
+                select: "_id firstName lastName email" // Incluir campos del estudiante
+            })
             .lean();
         
         // Filtrar enrollments con cursos válidos
-        const validEnrollments = enrollments.filter(enrollment => 
-            enrollment.course && 
-            enrollment.course._id && 
-            enrollment.course.active !== false // Incluir cursos activos
-        );
+        const validEnrollments = enrollments.filter(enrollment => {
+            const hasCourse = enrollment.course && 
+                             enrollment.course._id && 
+                             enrollment.course.title;
+            const hasStudent = enrollment.student && enrollment.student._id;
+            const isActive = enrollment.course?.active !== false;
+            
+            if (!hasCourse) {
+                console.warn('Enrollment missing course data:', enrollment._id);
+            }
+            if (!hasStudent) {
+                console.warn('Enrollment missing student data:', enrollment._id);
+            }
+            
+            return hasCourse && hasStudent && isActive;
+        });
+        
+        console.log(`Found ${validEnrollments.length} valid enrollments out of ${enrollments.length} total`);
         
         return replaceMongoIdInArray(validEnrollments);
     } catch (err) {

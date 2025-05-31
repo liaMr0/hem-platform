@@ -15,171 +15,151 @@ interface LessonPageProps {
 }
 
 const LessonPage = async ({ params, searchParams }: LessonPageProps) => {
-  try {
-    const { id } = await params;
-    const { name, module } = await searchParams;
-    
-    console.log("LessonPage - Course ID:", id, "Lesson name:", name, "Module:", module);
+  const { id } = await params;
+  const { name, module } = await searchParams;
+  
+  console.log("LessonPage - Course ID:", id, "Lesson name:", name, "Module:", module);
 
-    // Verificar autenticación
-    const loggedinUser = await getLoggedInUser();
-    if (!loggedinUser) {
-      console.log("LessonPage - No user logged in, redirecting to login");
-      redirect("/login");
-    }
+  // Verificar autenticación
+  const loggedinUser = await getLoggedInUser();
+  if (!loggedinUser) {
+    console.log("LessonPage - No user logged in, redirecting to login");
+    redirect("/login");
+  }
 
-    // Verificar inscripción
-    const isEnrolled = await hasEnrollmentForCourse(id, loggedinUser.id);
-    if (!isEnrolled) {
-      console.log("LessonPage - User not enrolled, redirecting to courses");
-      redirect("/courses");
-    }
+  // Verificar inscripción
+  const isEnrolled = await hasEnrollmentForCourse(id, loggedinUser.id);
+  if (!isEnrolled) {
+    console.log("LessonPage - User not enrolled, redirecting to courses");
+    redirect("/courses");
+  }
 
-    // Obtener detalles del curso
-    const course = await getCourseDetails(id);
-    
-    if (!course) {
-      console.log("LessonPage - Course not found");
-      return (
-        <div className="flex flex-col max-w-4xl mx-auto pb-20">
-          <div className="p-4 w-full">
-            <h1 className="text-2xl font-semibold text-red-600">
-              Curso no encontrado
-            </h1>
-          </div>
-        </div>
-      );
-    }
-
-    // Si no hay nombre de lección especificado, redirigir a la primera lección
-    if (!name) {
-      console.log("LessonPage - No lesson name provided, finding first lesson");
-      
-      const allModules = replaceMongoIdInArray(course.modules || []).toSorted(
-        (a, b) => a.order - b.order
-      );
-      
-      if (allModules.length > 0) {
-        const firstModule = allModules[0];
-        const firstModuleLessons = firstModule?.lessonIds || [];
-        
-        if (firstModuleLessons.length > 0) {
-          const sortedLessons = firstModuleLessons.toSorted((a, b) => a.order - b.order);
-          const firstLesson = sortedLessons[0];
-          
-          const redirectUrl = `/courses/${id}/lesson?name=${firstLesson.slug}&module=${firstModule.slug}`;
-          console.log("LessonPage - Redirecting to first lesson:", redirectUrl);
-          
-          redirect(redirectUrl);
-        }
-      }
-      
-      console.log("LessonPage - No lessons found, redirecting to course");
-      redirect(`/courses/${id}`);
-    }
-
-    // Buscar la lección específica
-    let currentLesson = null;
-    let currentModule = null;
-
-    const allModules = replaceMongoIdInArray(course.modules || []);
-    
-    console.log("LessonPage - Searching for lesson:", name, "in module:", module);
-    
-    for (const moduleItem of allModules) {
-      if (module && moduleItem.slug !== module) continue;
-      
-      const lessons = moduleItem.lessonIds || [];
-      const foundLesson = lessons.find(lesson => lesson.slug === name);
-      
-      if (foundLesson) {
-        currentLesson = replaceMongoIdInObject(foundLesson);
-        currentModule = moduleItem.slug;
-        console.log("LessonPage - Found lesson:", currentLesson.title);
-        break;
-      }
-    }
-
-    if (!currentLesson) {
-      console.log("LessonPage - Lesson not found");
-      return (
-        <div className="flex flex-col max-w-4xl mx-auto pb-20">
-          <div className="p-4 w-full">
-            <h1 className="text-2xl font-semibold text-red-600">
-              Lección no encontrada
-            </h1>
-            <p className="mt-4 text-gray-600">
-              La lección que buscas no existe o no tienes acceso a ella.
-            </p>
-          </div>
-        </div>
-      );
-    }
-
-    console.log("LessonPage - Rendering lesson:", currentLesson.title);
-
-    return (
-      <div>
-        <div className="flex flex-col max-w-4xl mx-auto pb-20">
-          <div className="p-4 w-full">
-            <LessonVideo 
-              courseId={id} 
-              lesson={currentLesson} 
-              module={currentModule} 
-            />
-          </div>
-          <div>
-            <div className="p-4 flex flex-col md:flex-row items-center justify-between">
-              <h2 className="text-2xl font-semibold mb-2">
-                {currentLesson?.title || "Lección sin título"}
-              </h2>
-            </div>
-            <Separator />
-            <VideoDescription 
-              description={currentLesson?.description || "Sin descripción disponible"}
-              courseId={id}
-              documents={course.documents || []}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  } catch (error) {
-    // Log the specific error for debugging
-    console.error("LessonPage - Error:", error);
-    
-    // Check if this is a Next.js redirect
-    // Next.js redirects throw a special object, not a standard Error
-    if (
-      error && 
-      typeof error === 'object' && 
-      'digest' in error && 
-      typeof error.digest === 'string' && 
-      error.digest.includes('NEXT_REDIRECT')
-    ) {
-      console.log("LessonPage - Next.js redirect detected, re-throwing");
-      throw error; // Re-throw redirect
-    }
-    
-    // Handle other errors
+  // Obtener detalles del curso
+  const course = await getCourseDetails(id);
+  
+  if (!course) {
+    console.log("LessonPage - Course not found");
     return (
       <div className="flex flex-col max-w-4xl mx-auto pb-20">
         <div className="p-4 w-full">
           <h1 className="text-2xl font-semibold text-red-600">
-            Error al cargar la lección
+            Curso no encontrado
           </h1>
-          <p className="mt-4 text-gray-600">
-            Ha ocurrido un error al cargar la lección. Por favor, intenta nuevamente.
-          </p>
-          {process.env.NODE_ENV === 'development' && (
-            <pre className="mt-4 p-4 bg-gray-100 text-sm overflow-auto">
-              {error instanceof Error ? error.stack : String(error)}
-            </pre>
-          )}
         </div>
       </div>
     );
   }
+
+  // Si no hay nombre de lección especificado, redirigir a la primera lección
+  if (!name) {
+    console.log("LessonPage - No lesson name provided, finding first lesson");
+    
+    const allModules = replaceMongoIdInArray(course.modules || []).toSorted(
+      (a, b) => a.order - b.order
+    );
+    
+    console.log("LessonPage - Total modules found:", allModules.length);
+    
+    if (allModules.length > 0) {
+      const firstModule = allModules[0];
+      const firstModuleLessons = firstModule?.lessonIds || [];
+      
+      console.log("LessonPage - First module lessons:", firstModuleLessons.length);
+      
+      if (firstModuleLessons.length > 0) {
+        const sortedLessons = firstModuleLessons.toSorted((a, b) => a.order - b.order);
+        const firstLesson = sortedLessons[0];
+        
+        console.log("LessonPage - First lesson found:", firstLesson.slug);
+        
+        const redirectUrl = `/courses/${id}/lesson?name=${firstLesson.slug}&module=${firstModule.slug}`;
+        console.log("LessonPage - Redirecting to first lesson:", redirectUrl);
+        
+        redirect(redirectUrl);
+      } else {
+        console.log("LessonPage - No lessons in first module");
+      }
+    } else {
+      console.log("LessonPage - No modules found");
+    }
+    
+    console.log("LessonPage - No lessons found, redirecting to course");
+    redirect(`/courses/${id}`);
+  }
+
+  // Buscar la lección específica
+  let currentLesson = null;
+  let currentModule = null;
+
+  const allModules = replaceMongoIdInArray(course.modules || []);
+  
+  console.log("LessonPage - Searching for lesson:", name, "in module:", module);
+  console.log("LessonPage - Available modules:", allModules.map(m => m.slug));
+  
+  for (const moduleItem of allModules) {
+    if (module && moduleItem.slug !== module) continue;
+    
+    const lessons = moduleItem.lessonIds || [];
+    console.log(`LessonPage - Module ${moduleItem.slug} has ${lessons.length} lessons:`, 
+      lessons.map(l => l.slug));
+    
+    const foundLesson = lessons.find(lesson => lesson.slug === name);
+    
+    if (foundLesson) {
+      currentLesson = replaceMongoIdInObject(foundLesson);
+      currentModule = moduleItem.slug;
+      console.log("LessonPage - Found lesson:", currentLesson.title);
+      break;
+    }
+  }
+
+  if (!currentLesson) {
+    console.log("LessonPage - Lesson not found");
+    return (
+      <div className="flex flex-col max-w-4xl mx-auto pb-20">
+        <div className="p-4 w-full">
+          <h1 className="text-2xl font-semibold text-red-600">
+            Lección no encontrada
+          </h1>
+          <p className="mt-4 text-gray-600">
+            La lección que buscas no existe o no tienes acceso a ella.
+          </p>
+          <p className="mt-2 text-sm text-gray-500">
+            Buscando: {name} en módulo: {module || "cualquiera"}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  console.log("LessonPage - Rendering lesson:", currentLesson.title);
+
+  return (
+    <div>
+      <div className="flex flex-col max-w-4xl mx-auto pb-20">
+        <div className="p-4 w-full">
+          <LessonVideo 
+            courseId={id} 
+            lesson={currentLesson} 
+            module={currentModule} 
+          />
+        </div>
+        <div>
+          <div className="p-4 flex flex-col md:flex-row items-center justify-between">
+            <h2 className="text-2xl font-semibold mb-2">
+              {currentLesson?.title || "Lección sin título"}
+            </h2>
+          </div>
+          <Separator />
+          <VideoDescription 
+            description={currentLesson?.description || "Sin descripción disponible"}
+            courseId={id}
+            documents={course.documents || []}
+          />
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default LessonPage;

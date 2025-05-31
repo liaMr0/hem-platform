@@ -6,8 +6,6 @@ import { replaceMongoIdInArray, replaceMongoIdInObject } from "@/lib/convertData
 import { getEnrollmentsForCourse } from "./enrollments";
 import { getTestimonialsForCourse } from "./testimonials";
 import { Lesson } from "@/model/lesson.model";
-import { Quizset } from "@/model/quizset-model";
-import { Quiz } from "@/model/quizzes-model";
 import mongoose from "mongoose";
 
 export async function getCourseList() {
@@ -30,20 +28,27 @@ export async function getCourseList() {
     return replaceMongoIdInArray(courses);
 }  
 
-export async function getCourseDetails(id: any) {
+
+export async function getCourseDetails(courseId: string) {
     try {
-        // Validar que el ID sea válido
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            console.error("Invalid course ID:", id);
-            return null;
+        // Validar que courseId existe y es válido
+        if (!courseId) {
+            console.error('Invalid course ID: undefined or null');
+            throw new Error('Course ID is required');
         }
 
-        const course = await Course.findById(id)
-            .populate({
-                path: "instructor",
-                model: User,
-                select: "_id firstName lastName designation profilePicture bio"
-            })
+        if (typeof courseId !== 'string') {
+            console.error('Invalid course ID type:', typeof courseId, courseId);
+            throw new Error('Course ID must be a string');
+        }
+
+        // Validar que es un ObjectId válido de MongoDB
+        if (!mongoose.Types.ObjectId.isValid(courseId)) {
+            console.error('Invalid MongoDB ObjectId:', courseId);
+            throw new Error('Invalid course ID format');
+        }
+
+        const course = await Course.findById(courseId)
             .populate({
                 path: "modules",
                 model: Module,
@@ -53,53 +58,31 @@ export async function getCourseDetails(id: any) {
                 }
             })
             .populate({
+                path: "instructor",
+                model: User
+            })
+            .populate({
                 path: "testimonials",
                 model: Testimonial,
                 populate: {
                     path: "user",
-                    model: User,
-                    select: "firstName lastName profilePicture"
-                }
-            })
-            .populate({
-                path: "quizSet",
-                model: Quizset,
-                populate: {
-                    path: "quizIds",
-                    model: Quiz
+                    model: User
                 }
             })
             .lean();
-        
+
         if (!course) {
-            console.error("Course not found with ID:", id);
+            console.error('Course not found with ID:', courseId);
             return null;
         }
 
-        // Verificar que el instructor esté poblado correctamente
-        if (!course.instructor || !course.instructor._id) {
-            console.error("Instructor data missing or incomplete for course:", id);
-            // Intentar obtener el instructor por separado si no se pobló correctamente
-            if (course.instructor && typeof course.instructor === 'string') {
-                try {
-                    const instructorData = await User.findById(course.instructor)
-                        .select("_id firstName lastName designation profilePicture bio")
-                        .lean();
-                    if (instructorData) {
-                        course.instructor = instructorData;
-                    }
-                } catch (error) {
-                    console.error("Error fetching instructor separately:", error);
-                }
-            }
-        }
-        
         return replaceMongoIdInObject(course);
     } catch (error) {
-        console.error("Error in getCourseDetails:", error);
-        return null;
+        console.error('Error in getCourseDetails:', error);
+        throw new Error(`Failed to get course details: ${error.message}`);
     }
 }
+
 
 function groupBy(array: any[], keyFn: (item: any) => string) {
     return array.reduce((acc, item) => {

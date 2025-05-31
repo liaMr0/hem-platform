@@ -1,18 +1,5 @@
  
 import { CourseProgress } from "@/components/course-progress";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { CheckCircle } from "lucide-react";
-import { PlayCircle } from "lucide-react";
-import { Lock } from "lucide-react";
-import Link from "next/link";
-import { ReviewModal } from "./review-modal";
 import { SidebarModules } from "./sidebar-modules";
 import { getCourseDetails } from "@/queries/courses";
 import { getLoggedInUser } from "@/lib/loggedin-user";

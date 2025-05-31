@@ -1,10 +1,10 @@
  
 import SearchCourse from "./_components/SearchCourse";
-import { getCourseList } from "@/queries/courses";
 import CourseCard from "./_components/CourseCard";
+import { getCourseList } from "@/queries/courses";
 
  
-const CoursesPage = async () => {
+ const CoursesPage = async () => {
     
   const courses = await getCourseList();
   

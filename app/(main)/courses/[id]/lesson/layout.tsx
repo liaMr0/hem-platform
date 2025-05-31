@@ -1,3 +1,4 @@
+// app/courses/[id]/layout.tsx
 import { CourseProgress } from "@/components/course-progress";
 import { cn } from "@/lib/utils";
 import { PlayCircle } from "lucide-react";
@@ -20,44 +21,41 @@ const CourseLayout = async ({ children, params }: CourseLayoutProps) => {
   
   console.log("Course ID:", id);
 
-  try {
-    const loggedinUser = await getLoggedInUser();
+  // Verificación de autenticación
+  const loggedinUser = await getLoggedInUser();
+  
+  if (!loggedinUser) {
+    redirect("/login");
+  }
 
-    if (!loggedinUser) {
-      redirect("/login");
-    }
+  // Verificación de inscripción
+  const isEnrolled = await hasEnrollmentForCourse(id, loggedinUser.id);
 
-    const isEnrolled = await hasEnrollmentForCourse(id, loggedinUser.id);
-
-    if (!isEnrolled) {
-      redirect("/courses");
-    }
-
-    return (
-      <div className="">
-        <div className="h-[80px] lg:pl-96 fixed top-[60px] inset-y-0 w-full z-10">
-          <div className="flex lg:hidden p-4 border-b h-full items-center bg-white shadow-sm relative">
-            {/* Barra lateral del curso para móvil */}
-            <CourseSidebarMobile courseId={id} />
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-12">
-          <div className="hidden lg:flex h-full w-96 flex-col inset-y-0 z-50">
-            {/* Barra lateral comienza */}
-            <CourseSidebar courseId={id} />
-            {/* Barra lateral termina */}
-          </div>
-          <main className="lg:pl-96 pt-[80px] lg:pt-[20px] h-full col-span-10 px-4">
-            {children}
-          </main>
-        </div>
-      </div>
-    );
-  } catch (error) {
-    console.error("Error en CourseLayout:", error);
+  if (!isEnrolled) {
     redirect("/courses");
   }
+
+  return (
+    <div className="">
+      <div className="h-[80px] lg:pl-96 fixed top-[60px] inset-y-0 w-full z-10">
+        <div className="flex lg:hidden p-4 border-b h-full items-center bg-white shadow-sm relative">
+          {/* Barra lateral del curso para móvil */}
+          <CourseSidebarMobile courseId={id} />
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-12">
+        <div className="hidden lg:flex h-full w-96 flex-col inset-y-0 z-50">
+          {/* Barra lateral comienza */}
+          <CourseSidebar courseId={id} />
+          {/* Barra lateral termina */}
+        </div>
+        <main className="lg:pl-96 pt-[80px] lg:pt-[20px] h-full col-span-10 px-4">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
 };
 
 export default CourseLayout;

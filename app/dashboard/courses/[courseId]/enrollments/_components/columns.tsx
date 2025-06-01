@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { GraduationCap } from "lucide-react";
 import { ArrowUpDown, MoreHorizontal, Pencil } from "lucide-react";
 import Link from "next/link";
-import { formatMyDate } from "@/lib/date";
+import { formatDate } from "@/lib/date";
 
 export const columns = [
   {
@@ -86,7 +86,7 @@ export const columns = [
     },
     cell: ({row}) => {
       const enrollmentDate = row.getValue("enrollment_date");
-      return formatMyDate(enrollmentDate);
+      return formatDate(enrollmentDate);
     },
   },
    

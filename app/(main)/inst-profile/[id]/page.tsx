@@ -1,6 +1,5 @@
 import { SectionTitle } from "@/components/section-title";
 import { Button } from "@/components/ui/button";
-import { formatPrice } from "@/lib/formatPrice";
 import { getCourseDetailsByInstructor } from "@/queries/courses";
 import {
   ArrowRight,

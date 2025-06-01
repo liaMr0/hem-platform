@@ -128,64 +128,18 @@ export async function getInstructorDashboardData(dataType: string): Promise<any>
   }
 }
 
-const populateEnrollmentData = async (enrollments: Enrollment[]): Promise<Enrollment[]> => {
-  const populatedEnrollments = await Promise.all(
-    enrollments.map(async (enrollment) => {
-      // Add null checks for all potential undefined values
-      if (enrollment?.student?._id) {
-        // Update student information
-        const student = await getUserDetails(enrollment.student._id);
-        if (student?.firstName && student?.lastName) {
-          enrollment["studentName"] = `${student.firstName} ${student.lastName}`;
-        }
-        if (student?.email) {
-          enrollment["studentEmail"] = student.email;
-        }
-
-        // Update quiz and Progress info
-        const filter = {
-          course: enrollment?.course?._id,
-          student: enrollment.student._id,
-        };
-
-        // Only proceed if we have both course and student ids
-        if (enrollment?.course?._id) {
-          const report: Report | null = await getReport(filter);
-          enrollment["progress"] = 0;
-          enrollment["quizMark"] = 0;
-
-          if (report) {
-            // Calculate Progress
-            const course: Course = await getCourseDetails(enrollment.course._id);
-            if (course?.modules) {
-              const totalModules = course.modules.length;
-              const totalCompletedModules = report?.totalCompletedModeules?.length || 0;
-              const progress = (totalCompletedModules / totalModules) * 100;
-              enrollment["progress"] = progress;
-
-              /// Calculate Quiz Marks
-              if (report?.quizAssessment?.assessments) {
-                const quizzes = report.quizAssessment.assessments;
-                const quizzesTaken = quizzes.filter(q => q.attempted);
-                // find how many quizzes answered correct
-                const totalCorrect = quizzesTaken
-                  .map(quiz => {
-                    const item = quiz.options;
-                    return item.filter(o => {
-                      return o.isCorrect === true && o.isSelected === true;
-                    });
-                  })
-                  .filter(elem => elem.length > 0)
-                  .flat();
-                const marksFromQuizzes = totalCorrect.length * 5;
-                enrollment["quizMark"] = marksFromQuizzes;
-              }
-            }
-          }
-        }
-      }
-      return enrollment;
-    })
-  );
-  return populatedEnrollments;
-};
+export function populateEnrollmentData(enrollments: any[]) {
+  return enrollments.map(enrollment => ({
+    id: enrollment._id?.toString() || enrollment.id,
+    studentId: enrollment.student?._id?.toString() || enrollment.studentId,
+    studentName: enrollment.student 
+      ? `${enrollment.student.firstName || ''} ${enrollment.student.lastName || ''}`.trim()
+      : 'Usuario no encontrado',
+    studentEmail: enrollment.student?.email || 'Email no disponible',
+    courseId: enrollment.course?._id?.toString() || enrollment.courseId,
+    courseName: enrollment.course?.title || 'Curso no encontrado', 
+    enrollmentDate: enrollment.enrollment_date || enrollment.createdAt,
+    progress: enrollment.progress || 0,
+    status: enrollment.status || 'active'
+  }));
+}

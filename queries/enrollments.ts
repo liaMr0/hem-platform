@@ -5,6 +5,29 @@ import { Enrollment } from "@/model/enrollment-model";
 import { User } from "@/model/user-model";
 import mongoose from "mongoose";
 
+export async function getEnrollmentsByCourse(courseId: string) {
+    try {
+        const enrollments = await Enrollment.find({ course: courseId })
+            .populate({
+                path: 'student',
+                model: User,
+                select: 'firstName lastName email profilePicture'
+            })
+            .populate({
+                path: 'course',
+                model: Course,
+                select: 'title'
+            })
+            .sort({ enrollment_date: -1 }) // Más recientes primero
+            .lean();
+
+        return enrollments.map(enrollment => replaceMongoIdInObject(enrollment));
+    } catch (error) {
+        console.error('Error getting enrollments by course:', error);
+        throw new Error('Failed to get course enrollments');
+    }
+}
+
 export async function getEnrollmentsForCourse(courseId: string) {
     const enrollments = await Enrollment.find({course: courseId}).lean();
     return replaceMongoIdInArray(enrollments);

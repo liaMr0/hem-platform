@@ -7,6 +7,7 @@ import { getEnrollmentsForCourse } from "./enrollments";
 import { getTestimonialsForCourse } from "./testimonials";
 import { Lesson } from "@/model/lesson.model";
 import mongoose from "mongoose";
+import { Enrollment } from "@/model/enrollment-model";
 
 export async function getCourseList() {
     const courses = await Course.find({active:true})
@@ -96,93 +97,51 @@ function groupBy(array: any[], keyFn: (item: any) => string) {
 }
 
 export async function getCourseDetailsByInstructor(instructorId: string, expand?: boolean) {
-    try {
-        // Validar que el instructorId sea válido
-        if (!mongoose.Types.ObjectId.isValid(instructorId)) {
-            console.error("Invalid instructor ID:", instructorId);
-            return null;
-        }
-
-        const publishCourses = await Course.find({instructor: instructorId, active: true})
-            .populate({
-                path: "testimonials", 
-                model: Testimonial
-            })
-            .populate({ 
-                path: "instructor", 
-                model: User,
-                select: "_id firstName lastName designation profilePicture bio"
-            })
-            .lean();
-
-        const enrollments = await Promise.all(
-            publishCourses.map(async (course) => {
-                const enrollment = await getEnrollmentsForCourse(course._id.toString());
-                return enrollment;
-            })
-        );
-
-        // Group enrollments by course
-        const groupByCourses = groupBy(enrollments.flat(), (item) => item.course);
-
-        // Calculate total revenue 
-        const totalRevenue = publishCourses.reduce((acc, course) => {
-            const enrollmentsForCourse = groupByCourses[course._id.toString()] || [];
-            return acc + enrollmentsForCourse.length * (course.price || 0); 
-        }, 0);
-
-        const totalEnrollments = enrollments.reduce((acc, obj) => {
-            return acc + obj.length;
-        }, 0);
-        
-        const testimonials = await Promise.all(
-            publishCourses.map(async (course) => {
-                const testimonial = await getTestimonialsForCourse(course._id.toString());
-                return testimonial;
-            })
-        );
-
-        const totalTestimonials = testimonials.flat();
-        const avgRating = totalTestimonials.length > 0 
-            ? (totalTestimonials.reduce((acc, obj) => acc + (obj.rating || 0), 0)) / totalTestimonials.length
-            : 0;
-
-        const instructorInfo = publishCourses.length > 0 && publishCourses[0]?.instructor 
-            ? publishCourses[0].instructor 
-            : null;
-
-        const firstName = instructorInfo?.firstName || "Unknown";
-        const lastName = instructorInfo?.lastName || "Unknown";
-        const fullInsName = `${firstName} ${lastName}`;
-        const Designation = instructorInfo?.designation || "Unknown";
-        const insImage = instructorInfo?.profilePicture || "/default-avatar.png";
-
-        if (expand) {
-            const allCourses = await Course.find({instructor: instructorId}).lean();
-            return {
-                "courses": allCourses?.flat() || [],
-                "enrollments": enrollments?.flat() || [],
-                "reviews": totalTestimonials,
-            };
-        }
-
-        return {
-            "courses": publishCourses.length,
-            "enrollments": totalEnrollments,
-            "reviews": totalTestimonials.length,
-            "ratings": avgRating > 0 ? Number(avgRating.toPrecision(2)) : 0,
-            "inscourses": publishCourses,
-            "revenue": totalRevenue,
-            fullInsName,
-            Designation,
-            insImage
-        };
-    } catch (error) {
-        console.error("Error in getCourseDetailsByInstructor:", error);
-        return null;
+  try {
+    const courses = await Course.find({ instructor: instructorId }).lean();
+    
+    if (!expand) {
+      return { courses, enrollments: [], reviews: [] };
     }
-}
 
+    const courseIds = courses.map(course => course._id);
+    
+    // Obtener enrollments con información del estudiante poblada
+    const enrollments = await Enrollment.find({ 
+      course: { $in: courseIds } 
+    })
+    .populate({
+      path: 'student',
+      model: User,
+      select: 'firstName lastName email' // Seleccionar solo los campos necesarios
+    })
+    .populate({
+      path: 'course',
+      model: Course,
+      select: 'title'
+    })
+    .lean();
+
+    const reviews = await Testimonial.find({ 
+      courseId: { $in: courseIds } 
+    })
+    .populate({
+      path: 'user',
+      model: User,
+      select: 'firstName lastName'
+    })
+    .lean();
+
+    return {
+      courses,
+      enrollments,
+      reviews
+    };
+  } catch (error) {
+    console.error('Error in getCourseDetailsByInstructor:', error);
+    throw error;
+  }
+}
 export async function create(courseData: any) {
     try {
         const course = await Course.create(courseData);

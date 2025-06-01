@@ -1,18 +1,18 @@
-export const formatMyDate = (date:any) => {
+// export const formatMyDate = (date:any) => {
 
-  if (!date) return "Invalid Date"; // Handle null or undefined values gracefully 
-  const parsedDate = new Date(date); // Convert to Date Object
-  if (isNaN(parsedDate)) return "Invalid date";  // Check if the date is invalid
+//   if (!date) return "Invalid Date"; // Handle null or undefined values gracefully 
+//   const parsedDate = new Date(date); // Convert to Date Object
+//   if (isNaN(parsedDate)) return "Invalid date";  // Check if the date is invalid
  
-    const options = {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    };
+//     const options = {
+//       year: "numeric",
+//       month: "short",
+//       day: "numeric",
+//     };
 
-    return new Intl.DateTimeFormat("en-US", options).format(parsedDate);
+//     return new Intl.DateTimeFormat("en-US", options).format(parsedDate);
     
-  }
+//   }
 
   export const formatDuration = (duration:any) => {
     if (!duration) return null;
@@ -25,3 +25,17 @@ export const formatMyDate = (date:any) => {
     return durationString; 
     
   }
+
+export function formatDate(date: Date | string): string {
+  if (!date) return 'N/A';
+  
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  return new Intl.DateTimeFormat('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(dateObj);
+}

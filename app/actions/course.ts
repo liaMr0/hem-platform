@@ -2,8 +2,15 @@
 
 import { getLoggedInUser } from "@/lib/loggedin-user"
 import { Course } from "@/model/course-model";
+import { Lesson } from "@/model/lesson.model";
+import { Enrollment } from "@/model/enrollment-model";
+import { Module } from "@/model/module.model";
 import { create } from "@/queries/courses";
 import mongoose, { Types } from "mongoose";
+import { Watch } from "@/model/watch-model";
+import { Testimonial } from "@/model/testimonial-model";
+import { Assessment } from "@/model/assessment-model";
+import { Report } from "@/model/report-model";
 
 interface Testimonial {
   _id: Types.ObjectId;
@@ -76,9 +83,56 @@ export async function changeCoursePublishState(courseId: string): Promise<boolea
 
 export async function deleteCourse(courseId: string): Promise<void> {
     try {
-        await Course.findByIdAndDelete(courseId);  
+        // 1. Obtener el curso con los módulos poblados
+        const course = await Course.findById(courseId).populate({
+            path: "modules",
+            populate: {
+                path: "lessonIds",
+                model: "Lesson"
+            }
+        });
+        
+        if (!course) throw new Error("Curso no encontrado");
+
+        // 2. Obtener IDs de módulos
+        const moduleIds = course.modules.map((mod: any) => mod._id);
+
+        // 3. Obtener todos los IDs de lecciones de todos los módulos
+        const lessonIds: string[] = [];
+        course.modules.forEach((module: any) => {
+            if (module.lessonIds && module.lessonIds.length > 0) {
+                module.lessonIds.forEach((lesson: any) => {
+                    lessonIds.push(lesson._id);
+                });
+            }
+        });
+
+        // 4. Eliminar todo lo relacionado
+        await Promise.all([
+            // Eliminar lecciones
+            Lesson.deleteMany({ _id: { $in: lessonIds } }),
+            // Eliminar módulos
+            Module.deleteMany({ _id: { $in: moduleIds } }),
+            // Eliminar inscripciones
+            Enrollment.deleteMany({ course: courseId }),
+            // Eliminar reportes
+            Report.deleteMany({ course: courseId }),
+            // Eliminar registros de visualización
+            Watch.deleteMany({ lesson: { $in: lessonIds } }),
+            // Eliminar testimonios
+            Testimonial.deleteMany({ courseId: courseId }),
+            // Eliminar assessment si existe
+            course.quizSet ? Assessment.findByIdAndDelete(course.quizSet) : Promise.resolve()
+        ]);
+
+        // 5. Eliminar el curso en sí
+        await Course.findByIdAndDelete(courseId);
+
+        console.log(`Curso ${courseId} y todas sus dependencias eliminados exitosamente`);
+
     } catch (err) {
-        throw new Error(err as string);
+        console.error("Error al eliminar el curso y sus dependencias:", err);
+        throw new Error("Error al eliminar el curso y sus dependencias");
     }
 }
 

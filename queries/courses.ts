@@ -1,3 +1,4 @@
+// queries/courses.ts
 import { Course } from "@/model/course-model";
 import { Module } from "@/model/module.model";
 import { Testimonial } from "@/model/testimonial-model";
@@ -11,7 +12,7 @@ import { Enrollment } from "@/model/enrollment-model";
 
 export async function getCourseList() {
     const courses = await Course.find({active:true})
-        .select(["title","subtitle","thumbnail","modules","price","category","instructor"])
+        .select(["title","subtitle","thumbnail","modules","category","instructor"])
         .populate({
             path: "instructor",
             model: User,
@@ -27,8 +28,57 @@ export async function getCourseList() {
         })
         .lean();
     return replaceMongoIdInArray(courses);
-}  
+}
 
+// Nueva función para obtener cursos del dashboard basado en rol
+export async function getDashboardCourses(instructorId?: string) {
+    try {
+        let query = {};
+        
+        // Si se proporciona instructorId, filtrar solo cursos de ese instructor
+        if (instructorId) {
+            if (!mongoose.Types.ObjectId.isValid(instructorId)) {
+                throw new Error('Invalid instructor ID format');
+            }
+            query = { instructor: instructorId };
+        }
+
+        const courses = await Course.find(query)
+            .select([
+                "title",
+                "subtitle", 
+                "thumbnail",
+                "modules",
+                "category",
+                "instructor",
+                "active",
+                "price",
+                "createdOn",
+                "modifiedOn"
+            ])
+            .populate({
+                path: "instructor",
+                model: User,
+                select: "_id firstName lastName designation profilePicture"
+            })
+            .populate({
+                path: "category",
+                select: "title"
+            })
+            .populate({
+                path: "modules",
+                model: Module,
+                select: "title"
+            })
+            .sort({ createdOn: -1 })
+            .lean();
+
+        return replaceMongoIdInArray(courses);
+    } catch (error) {
+        console.error('Error in getDashboardCourses:', error);
+        throw new Error(`Failed to get dashboard courses: ${error.message}`);
+    }
+}
 
 export async function getCourseDetails(courseId: string) {
     try {
@@ -41,6 +91,12 @@ export async function getCourseDetails(courseId: string) {
         if (typeof courseId !== 'string') {
             console.error('Invalid course ID type:', typeof courseId, courseId);
             throw new Error('Course ID must be a string');
+        }
+
+        // Check for string representations of undefined/null
+        if (courseId === 'undefined' || courseId === 'null' || courseId.trim() === '') {
+            console.error('Invalid course ID value:', courseId);
+            throw new Error('Course ID cannot be undefined, null, or empty');
         }
 
         // Validar que es un ObjectId válido de MongoDB
@@ -84,7 +140,6 @@ export async function getCourseDetails(courseId: string) {
     }
 }
 
-
 function groupBy(array: any[], keyFn: (item: any) => string) {
     return array.reduce((acc, item) => {
         const key = keyFn(item);
@@ -113,7 +168,7 @@ export async function getCourseDetailsByInstructor(instructorId: string, expand?
     .populate({
       path: 'student',
       model: User,
-      select: 'firstName lastName email' // Seleccionar solo los campos necesarios
+      select: 'firstName lastName email'
     })
     .populate({
       path: 'course',
@@ -142,6 +197,7 @@ export async function getCourseDetailsByInstructor(instructorId: string, expand?
     throw error;
   }
 }
+
 export async function create(courseData: any) {
     try {
         const course = await Course.create(courseData);

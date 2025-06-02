@@ -1,3 +1,4 @@
+// actions/courses.ts
 "use server"
 
 import { getLoggedInUser } from "@/lib/loggedin-user"
@@ -38,9 +39,44 @@ interface QuizSetUpdate {
   quizSetId: string;
 }
 
+// Helper function to check if user can modify course
+async function canModifyCourse(courseId: string): Promise<boolean> {
+  const loggedInUser = await getLoggedInUser();
+  
+  if (!loggedInUser) {
+    throw new Error("Usuario no autenticado");
+  }
+
+  if (loggedInUser.role === 'admin') {
+    return true;
+  }
+
+  // Instructor solo puede modificar sus propios cursos
+  if (loggedInUser.role === 'instructor') {
+    const course = await Course.findById(courseId).lean();
+    if (!course) {
+      throw new Error("Curso no encontrado");
+    }
+    
+    return course.instructor.toString() === loggedInUser.id;
+  }
+
+  return false;
+}
+
 export async function createCourse(data: Partial<CourseData>): Promise<CourseData> {
     try {
         const loggedinUser = await getLoggedInUser();
+        
+        if (!loggedinUser) {
+            throw new Error("Usuario no autenticado");
+        }
+
+        // Solo admin e instructor pueden crear cursos
+        if (!['admin', 'instructor'].includes(loggedinUser.role)) {
+            throw new Error("No tienes permisos para crear cursos");
+        }
+
         data["instructor"] = loggedinUser?.id;
         const course = await create(data);
         return course;
@@ -51,6 +87,12 @@ export async function createCourse(data: Partial<CourseData>): Promise<CourseDat
  
 export async function updateCourse(courseId: string, dataToUpdate): Promise<void> {
     try {
+        const canModify = await canModifyCourse(courseId);
+        
+        if (!canModify) {
+            throw new Error("No tienes permisos para modificar este curso");
+        }
+
         await Course.findByIdAndUpdate(courseId, dataToUpdate);
     } catch (e) {
         throw new Error(e as string);
@@ -59,6 +101,12 @@ export async function updateCourse(courseId: string, dataToUpdate): Promise<void
 
 export async function changeCoursePublishState(courseId: string): Promise<boolean> {
     try {
+        const canModify = await canModifyCourse(courseId);
+        
+        if (!canModify) {
+            throw new Error("No tienes permisos para modificar este curso");
+        }
+
         const course = await Course.findById(courseId).lean() as CourseData | null;
         
         if (!course) {
@@ -83,6 +131,12 @@ export async function changeCoursePublishState(courseId: string): Promise<boolea
 
 export async function deleteCourse(courseId: string): Promise<void> {
     try {
+        const canModify = await canModifyCourse(courseId);
+        
+        if (!canModify) {
+            throw new Error("No tienes permisos para eliminar este curso");
+        }
+
         // 1. Obtener el curso con los módulos poblados
         const course = await Course.findById(courseId).populate({
             path: "modules",
@@ -137,9 +191,16 @@ export async function deleteCourse(courseId: string): Promise<void> {
 }
 
 export async function updateQuizSetForCourse(courseId: string, dataUpdated: QuizSetUpdate): Promise<void> {
-    const data: Partial<CourseData> = {};
-    data["quizSet"] = new mongoose.Types.ObjectId(dataUpdated.quizSetId);
     try {
+        const canModify = await canModifyCourse(courseId);
+        
+        if (!canModify) {
+            throw new Error("No tienes permisos para modificar este curso");
+        }
+
+        const data: Partial<CourseData> = {};
+        data["quizSet"] = new mongoose.Types.ObjectId(dataUpdated.quizSetId);
+        
         await Course.findByIdAndUpdate(courseId, data);
     } catch (error) {
         throw new Error(error as string);

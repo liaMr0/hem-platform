@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { IUser } from "@/model/user-model";
@@ -26,6 +26,15 @@ import { BulkActionDialog } from "./_components/BulkActionDialog";
 
 export default function UsersPage() {
   const { data: session, status } = useSession();
+  // if (!session?.user) {
+  //   redirect('/');
+  // }
+  //  const userRole = session.user.role;
+  
+  // // Solo el admin puede acceder a la gestión de usuarios
+  // if (userRole !== 'admin') {
+  //   redirect('/dashboard'); // Redirigir al dashboard principal
+  // }
   const router = useRouter();
 
   // Estados de diálogos
@@ -181,7 +190,7 @@ export default function UsersPage() {
     <div className="container mx-auto py-8 px-4">
       <UsersHeader onCreateUser={() => setCreateUserDialog(true)} />
       
-      <StatsCards stats={stats} />
+      {/* <StatsCards stats={stats} /> */}
       
       <FiltersSection
         filters={filters}

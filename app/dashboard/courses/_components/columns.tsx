@@ -54,7 +54,27 @@ export const columns = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const id = row.original._id;
+      // Intentar obtener el ID de diferentes maneras
+      const id = row.original._id || row.original.id;
+      
+      // Debug: mostrar en consola para verificar
+      console.log('Row data:', {
+        original: row.original,
+        id: id,
+        _id: row.original._id,
+        idField: row.original.id
+      });
+
+      // Si no hay ID, mostrar error en lugar de romper
+      if (!id) {
+        console.error('No ID found for course:', row.original);
+        return (
+          <div className="text-red-500 text-xs">
+            Error: ID no encontrado
+          </div>
+        );
+      }
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

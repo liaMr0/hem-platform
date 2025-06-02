@@ -1,3 +1,4 @@
+// actions/quiz.ts
 "use server"
 import { Quizset } from "@/model/quizset-model";
 import { getSlug, replaceMongoIdInArray } from '../../lib/convertData';
@@ -7,10 +8,56 @@ import mongoose from "mongoose";
 import { Assessment } from "@/model/assessment-model";
 import { getLoggedInUser } from "@/lib/loggedin-user";
 import { createAssessmentReport } from "@/queries/reports";
+import { Course } from "@/model/course-model";
 
+// Helper function to check if user can modify quiz
+async function canModifyQuiz(quizSetId: string): Promise<boolean> {
+  const loggedInUser = await getLoggedInUser();
+  
+  if (!loggedInUser) {
+    throw new Error("Usuario no autenticado");
+  }
+
+  // Admin puede modificar cualquier quiz
+  if (loggedInUser.role === 'admin') {
+    return true;
+  }
+
+  // Instructor solo puede modificar quizzes de sus propios cursos
+  if (loggedInUser.role === 'instructor') {
+    // Buscar el curso que contiene este quizSet
+    const course = await Course.findOne({ quizSet: quizSetId }).lean();
+    
+    if (!course) {
+      throw new Error("Quiz no encontrado o no asociado a ningún curso");
+    }
+    
+    return course.instructor.toString() === loggedInUser.id;
+  }
+
+  return false;
+}
+
+// Helper function to check if user can modify quiz set (for creation)
+async function canCreateQuizSet(): Promise<boolean> {
+  const loggedInUser = await getLoggedInUser();
+  
+  if (!loggedInUser) {
+    throw new Error("Usuario no autenticado");
+  }
+
+  // Solo admin e instructor pueden crear quiz sets
+  return ['admin', 'instructor'].includes(loggedInUser.role);
+}
 
 export async function updateQuizSet(quizset, dataToUpdate){
     try {
+        const canModify = await canModifyQuiz(quizset);
+        
+        if (!canModify) {
+            throw new Error("No tienes permisos para modificar este quiz");
+        }
+
         await Quizset.findByIdAndUpdate(quizset, dataToUpdate);
 
     } catch (error) {
@@ -20,44 +67,54 @@ export async function updateQuizSet(quizset, dataToUpdate){
 
 export async function addQuizToQuizSet(quizSetId:string, quizData:any){
     try {
+        const canModify = await canModifyQuiz(quizSetId);
+        
+        if (!canModify) {
+            throw new Error("No tienes permisos para modificar este quiz");
+        }
+
         //console.log(quizSetId,quizData);
-    const transformedQuizData = {};
-    transformedQuizData["title"] = quizData["title"];
-    transformedQuizData["description"] = quizData["description"];
-    transformedQuizData["slug"] = getSlug(quizData["title"]);
-    transformedQuizData["options"] = [
-        {
-            text: quizData.optionA.label,
-            is_correct: quizData.optionA.isTrue  
-        },
-        {
-            text: quizData.optionB.label,
-            is_correct: quizData.optionB.isTrue  
-        },
-        {
-            text: quizData.optionC.label,
-            is_correct: quizData.optionC.isTrue  
-        },
-        {
-            text: quizData.optionD.label,
-            is_correct: quizData.optionD.isTrue  
-        }, 
-    ];
-    //console.log(transformedQuizData);
+        const transformedQuizData = {};
+        transformedQuizData["title"] = quizData["title"];
+        transformedQuizData["description"] = quizData["description"];
+        transformedQuizData["slug"] = getSlug(quizData["title"]);
+        transformedQuizData["options"] = [
+            {
+                text: quizData.optionA.label,
+                is_correct: quizData.optionA.isTrue  
+            },
+            {
+                text: quizData.optionB.label,
+                is_correct: quizData.optionB.isTrue  
+            },
+            {
+                text: quizData.optionC.label,
+                is_correct: quizData.optionC.isTrue  
+            },
+            {
+                text: quizData.optionD.label,
+                is_correct: quizData.optionD.isTrue  
+            }, 
+        ];
+        //console.log(transformedQuizData);
 
-    const createdQuizId = await createQuiz(transformedQuizData);
+        const createdQuizId = await createQuiz(transformedQuizData);
 
-    const quizSet = await Quizset.findById(quizSetId);
-    quizSet.quizIds.push(createdQuizId);
-    quizSet.save();
+        const quizSet = await Quizset.findById(quizSetId);
+        quizSet.quizIds.push(createdQuizId);
+        quizSet.save();
     } catch (error) {
         throw new Error(error);
     }
 }
 
-
 export async function deleteQuiz(quizSetId:string, quizId:string) {
     try {
+        const canModify = await canModifyQuiz(quizSetId);
+        
+        if (!canModify) {
+            throw new Error("No tienes permisos para modificar este quiz");
+        }
 
         await Quizset.findByIdAndUpdate(quizSetId, {
             $pull: {quizIds:quizId } 
@@ -70,9 +127,14 @@ export async function deleteQuiz(quizSetId:string, quizId:string) {
     }
 }
 
-
 export async function deleteQuizSet(quizSetId:string) {
   try {
+    const canModify = await canModifyQuiz(quizSetId);
+    
+    if (!canModify) {
+        throw new Error("No tienes permisos para eliminar este quiz");
+    }
+
     const quizSet = await Quizset.findById(quizSetId);
 
     if (!quizSet) {
@@ -90,10 +152,15 @@ export async function deleteQuizSet(quizSetId:string) {
   }
 }
 
-
 export async function changeQuizPublishState(quizSetId:string) {
-    const quiz = await Quizset.findById(quizSetId);
     try {
+        const canModify = await canModifyQuiz(quizSetId);
+        
+        if (!canModify) {
+            throw new Error("No tienes permisos para modificar este quiz");
+        }
+
+        const quiz = await Quizset.findById(quizSetId);
         const res = await Quizset.findByIdAndUpdate(quizSetId, {active: !quiz.active},{lean: true});
         return res.active;
     } catch (error) {
@@ -103,13 +170,18 @@ export async function changeQuizPublishState(quizSetId:string) {
 
 export async function doCreateQuizSet(data){
     try {
+        const canCreate = await canCreateQuizSet();
+        
+        if (!canCreate) {
+            throw new Error("No tienes permisos para crear quiz sets");
+        }
+
         data['slug'] = getSlug(data.title);
         const createdQuizSet = await Quizset.create(data);
         return createdQuizSet?._id.toString();
     } catch (error) {
         throw new Error(error);
     }
-
 }
 
 export async function addQuizAssessment(courseId:string,quizSetId:string,answers:any) {
@@ -159,5 +231,4 @@ export async function addQuizAssessment(courseId:string,quizSetId:string,answers
     } catch (error) {
         throw new Error(error);
     }
-
 }

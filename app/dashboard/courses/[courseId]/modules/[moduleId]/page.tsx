@@ -23,8 +23,9 @@ interface ModulePageProps {
   };
 }
 
-const Module = async ({ params: { courseId, moduleId } }: ModulePageProps) => {
+const Module = async ({ params}: ModulePageProps) => {
   // Obtener datos del módulo
+  const { courseId, moduleId } = await params;
   const module = await getModule(moduleId);
   const sanitizedModule = sanitizeData(module);
 

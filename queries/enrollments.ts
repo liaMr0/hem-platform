@@ -1,12 +1,34 @@
-// queries/enrollments.ts - Funciones actualizadas para tu modelo
+// queries/enrollments.ts - Funciones actualizadas con validación mejorada
 import { replaceMongoIdInArray, replaceMongoIdInObject } from "@/lib/convertData";
 import { Course } from "@/model/course-model";
 import { Enrollment } from "@/model/enrollment-model"; 
 import { User } from "@/model/user-model";
 import mongoose from "mongoose";
 
+// Helper function to validate ObjectId
+function validateObjectId(id: string, fieldName: string = 'ID'): void {
+    if (!id) {
+        throw new Error(`${fieldName} is required`);
+    }
+    
+    if (typeof id !== 'string') {
+        throw new Error(`${fieldName} must be a string`);
+    }
+    
+    // Check for string representations of undefined/null
+    if (id === 'undefined' || id === 'null' || id.trim() === '') {
+        throw new Error(`${fieldName} cannot be undefined, null, or empty`);
+    }
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error(`Invalid ${fieldName} format: ${id}`);
+    }
+}
+
 export async function getEnrollmentsByCourse(courseId: string) {
     try {
+        validateObjectId(courseId, 'Course ID');
+        
         const enrollments = await Enrollment.find({ course: courseId })
             .populate({
                 path: 'student',
@@ -24,20 +46,25 @@ export async function getEnrollmentsByCourse(courseId: string) {
         return enrollments.map(enrollment => replaceMongoIdInObject(enrollment));
     } catch (error) {
         console.error('Error getting enrollments by course:', error);
-        throw new Error('Failed to get course enrollments');
+        throw new Error(`Failed to get course enrollments: ${error.message}`);
     }
 }
 
 export async function getEnrollmentsForCourse(courseId: string) {
-    const enrollments = await Enrollment.find({course: courseId}).lean();
-    return replaceMongoIdInArray(enrollments);
+    try {
+        validateObjectId(courseId, 'Course ID');
+        
+        const enrollments = await Enrollment.find({course: courseId}).lean();
+        return replaceMongoIdInArray(enrollments);
+    } catch (error) {
+        console.error('Error in getEnrollmentsForCourse:', error);
+        throw new Error(`Failed to get enrollments for course: ${error.message}`);
+    }
 }
 
 export async function getEnrollmentsForUser(userId: string) {
     try {
-        if (!userId) {
-            throw new Error('User ID is required');
-        }
+        validateObjectId(userId, 'User ID');
 
         const enrollments = await Enrollment.find({ student: userId})
             .populate({
@@ -81,6 +108,9 @@ export async function getEnrollmentsForUser(userId: string) {
 
 export async function hasEnrollmentForCourse(courseId: string, studentId: string): Promise<boolean> {
     try {
+        validateObjectId(courseId, 'Course ID');
+        validateObjectId(studentId, 'Student ID');
+        
         const enrollment = await Enrollment.findOne({
             course: courseId,
             student: studentId
@@ -95,6 +125,9 @@ export async function hasEnrollmentForCourse(courseId: string, studentId: string
 
 export async function isUserEnrolled(courseId: string, userId: string): Promise<boolean> {
     try {
+        validateObjectId(courseId, 'Course ID');
+        validateObjectId(userId, 'User ID');
+        
         const enrollment = await Enrollment.findOne({
             course: courseId,
             student: userId
@@ -109,6 +142,9 @@ export async function isUserEnrolled(courseId: string, userId: string): Promise<
 
 export async function getEnrollmentDetails(courseId: string, userId: string) {
     try {
+        validateObjectId(courseId, 'Course ID');
+        validateObjectId(userId, 'User ID');
+        
         const enrollment = await Enrollment.findOne({
             course: courseId,
             student: userId
@@ -126,6 +162,9 @@ export async function getEnrollmentDetails(courseId: string, userId: string) {
 
 export async function enrollForCourse(courseId: string, userId: string) {
     try {
+        validateObjectId(courseId, 'Course ID');
+        validateObjectId(userId, 'User ID');
+        
         // Verificar que el curso existe y está activo
         const course = await Course.findOne({ _id: courseId, active: true }).lean();
         if (!course) {
@@ -199,6 +238,9 @@ export async function enrollForCourse(courseId: string, userId: string) {
 
 export async function updateEnrollmentProgress(courseId: string, userId: string, progress: number) {
     try {
+        validateObjectId(courseId, 'Course ID');
+        validateObjectId(userId, 'User ID');
+        
         if (progress < 0 || progress > 100) {
             throw new Error('Progress must be between 0 and 100');
         }
@@ -225,12 +267,14 @@ export async function updateEnrollmentProgress(courseId: string, userId: string,
         return enrollment ? replaceMongoIdInObject(enrollment) : null;
     } catch (error) {
         console.error('Error updating enrollment progress:', error);
-        throw new Error('Failed to update progress');
+        throw new Error(`Failed to update progress: ${error.message}`);
     }
 }
 
 export async function getUserEnrollments(userId: string) {
     try {
+        validateObjectId(userId, 'User ID');
+        
         const enrollments = await Enrollment.find({ student: userId })
             .populate({
                 path: 'course',
@@ -253,6 +297,8 @@ export async function getUserEnrollments(userId: string) {
 
 export async function getCourseEnrollments(courseId: string) {
     try {
+        validateObjectId(courseId, 'Course ID');
+        
         const enrollments = await Enrollment.find({ course: courseId })
             .populate({
                 path: 'student',
@@ -264,13 +310,16 @@ export async function getCourseEnrollments(courseId: string) {
         return replaceMongoIdInArray(enrollments);
     } catch (error) {
         console.error('Error getting course enrollments:', error);
-        return [];
+        throw new Error(`Failed to get course enrollments: ${error.message}`);
     }
 }
 
 // Función adicional para pausar/reanudar enrollment
 export async function updateEnrollmentStatus(courseId: string, userId: string, status: 'not-started' | 'in-progress' | 'completed' | 'paused') {
     try {
+        validateObjectId(courseId, 'Course ID');
+        validateObjectId(userId, 'User ID');
+        
         const updateData: any = {
             status: status,
             last_accessed: new Date()
@@ -291,13 +340,15 @@ export async function updateEnrollmentStatus(courseId: string, userId: string, s
         return enrollment ? replaceMongoIdInObject(enrollment) : null;
     } catch (error) {
         console.error('Error updating enrollment status:', error);
-        throw new Error('Failed to update enrollment status');
+        throw new Error(`Failed to update enrollment status: ${error.message}`);
     }
 }
 
 // Función para obtener estadísticas de enrollment
 export async function getEnrollmentStats(courseId: string) {
     try {
+        validateObjectId(courseId, 'Course ID');
+        
         const stats = await Enrollment.aggregate([
             { $match: { course: new mongoose.Types.ObjectId(courseId) } },
             {

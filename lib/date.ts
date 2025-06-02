@@ -39,3 +39,12 @@ export function formatDate(date: Date | string): string {
     minute: '2-digit'
   }).format(dateObj);
 }
+// lib/utils.ts - Función para formatear fechas
+export function formatMyDate(date: Date | string): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }).format(dateObj);
+}

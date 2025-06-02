@@ -11,7 +11,7 @@ const DashboardLayout = async ({ children }: any) => {
           redirect('/');
         }
           const role = session.user.role;
-          if (role !== 'instructor') {
+          if (role !== 'admin') {
             redirect('/');
           }
        

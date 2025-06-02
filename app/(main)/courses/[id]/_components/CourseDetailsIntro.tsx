@@ -1,5 +1,4 @@
-
-// _components/CourseDetailsIntro.tsx (Mejorado)
+// _components/CourseDetailsIntro.tsx (Fixed)
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
@@ -27,8 +26,6 @@ const CourseDetailsIntro = async ({ course }) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Content */}
           <div className="space-y-6">
-        
-
             {/* Title */}
             <div className="space-y-4">
               <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
@@ -89,7 +86,7 @@ const CourseDetailsIntro = async ({ course }) => {
               <Image
                 className="w-12 h-12 rounded-full ring-2 ring-white/30"
                 src={course?.instructor?.profilePicture || '/default-avatar.png'}
-                alt={course?.instructor?.firstName}
+                alt={`Foto de perfil de ${course?.instructor?.firstName} ${course?.instructor?.lastName}` || 'Instructor'}
                 width={48}
                 height={48}
               />
@@ -110,7 +107,7 @@ const CourseDetailsIntro = async ({ course }) => {
                 width={600}
                 height={400}
                 src={`/assets/images/courses/${course?.thumbnail}`}
-                alt={course?.title}
+                alt={`Imagen de vista previa del curso: ${course?.title}` || 'Vista previa del curso'}
               />
               <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                 <button className="w-20 h-20 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
@@ -124,4 +121,5 @@ const CourseDetailsIntro = async ({ course }) => {
     </div>
   );
 };
+
 export default CourseDetailsIntro;

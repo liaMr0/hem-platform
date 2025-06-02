@@ -3,7 +3,6 @@ import SearchCourse from "./_components/SearchCourse";
 import CourseCard from "./_components/CourseCard";
 import { getCourseList } from "@/queries/courses";
 
- 
  const CoursesPage = async () => {
     
   const courses = await getCourseList();

@@ -107,8 +107,8 @@ const MainNav = ({items,children}) => {
             <Link href='/account'>Perfil</Link> 
         </DropdownMenuItem>
 
-        {loggedInUser?.role === "instructor" && (
-            <DropdownMenuItem className="cursor-pointer" asChild>
+        {loggedInUser?.role === "instructor" || loggedInUser?.role === "admin" && (
+        <DropdownMenuItem className="cursor-pointer" asChild>
             <Link href='/dashboard'> <strong>Panel de administración</strong> </Link> 
         </DropdownMenuItem>
         )}

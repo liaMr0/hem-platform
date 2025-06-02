@@ -1,7 +1,5 @@
-import { auth } from '@/auth';
 import MainNav from '@/components/main-nav';
 import SiteFooter from '@/components/site-footer';
-import { redirect } from 'next/navigation';
 import React from 'react';
 
 const navLinks = [

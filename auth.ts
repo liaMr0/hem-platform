@@ -15,31 +15,57 @@ const authOptions: NextAuthConfig = {
         try {
           const user = await User.findOne({ email: credentials.email });
 
-          if (user) {
-            const isMatch = await bcrypt.compare(credentials.password, user.password);
-
-            if (isMatch) {
-              // Retorna todos los datos necesarios desde authorize
-              return {
-                id: user._id.toString(),
-                name: `${user.firstName} ${user.lastName}`, // Combina firstName y lastName
-                email: user.email,
-                role: user.role,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                image: user.profilePicture
-              };
-            } else {
-              console.error("Password Mismatch");
-              throw new Error("Check your password");
-            }
-          } else {
+          if (!user) {
             console.error("User not found");
-            throw new Error("User not found");
+            throw new Error("Usuario no encontrado");
           }
+
+          const isMatch = await bcrypt.compare(credentials.password, user.password);
+
+          if (!isMatch) {
+            console.error("Password Mismatch");
+            throw new Error("Contraseña incorrecta");
+          }
+
+          // Validar el estado del usuario
+          if (user.status === 'pending') {
+            throw new Error("Tu cuenta está pendiente de aprobación. Por favor espera a que un administrador apruebe tu cuenta.");
+          }
+
+          if (user.status === 'rejected') {
+            throw new Error("Tu cuenta ha sido rechazada. Contacta al administrador para más información.");
+          }
+
+          if (user.status === 'suspended') {
+            throw new Error("Tu cuenta ha sido suspendida. Contacta al administrador para más información.");
+          }
+
+          // Solo permitir acceso si el estado es 'approved'
+          if (user.status !== 'approved') {
+            throw new Error("Tu cuenta no tiene permisos para acceder al sistema.");
+          }
+
+          // Actualizar último inicio de sesión
+          await User.findByIdAndUpdate(user._id, {
+            lastLogin: new Date()
+          });
+
+          // Retorna todos los datos necesarios desde authorize
+          return {
+            id: user._id.toString(),
+            name: `${user.firstName} ${user.lastName}`,
+            email: user.email,
+            role: user.role,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            image: user.profilePicture,
+            status: user.status
+          };
+
         } catch (err) {
-          console.error(err);
-          throw new Error(err as string);
+          console.error("Authorization error:", err);
+          // Lanzar el error para que NextAuth lo maneje
+          throw err;
         }
       }
     })
@@ -58,7 +84,8 @@ const authOptions: NextAuthConfig = {
         token.role = user.role;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
-        token.image = user.image; // Añade la imagen del perfil
+        token.image = user.image;
+        token.status = user.status;
       }
       return token;
     },
@@ -71,7 +98,8 @@ const authOptions: NextAuthConfig = {
         session.user.role = token.role as string;
         session.user.firstName = token.firstName as string;
         session.user.lastName = token.lastName as string;
-        session.user.image = token.image as string; // Añade la imagen del perfil
+        session.user.image = token.image as string;
+        session.user.status = token.status as string;
       }
       return session;
     }

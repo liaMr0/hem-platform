@@ -20,7 +20,7 @@ const HeroSection = () => {
               <GraduationCap className="mr-1 h-4 w-4" /> Ecosistema digital
             </Badge>
             <h1 className="mb-6 text-4xl font-extrabold tracking-tight md:text-5xl lg:text-6xl">
-              Ecosistema digital para la <span className="bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent">formacion continua de docentes universitarios</span>
+              Ecosistema digital para la <span className="bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent">formación continua de docentes universitarios</span>
             </h1>
             <p className="mb-10 text-lg text-muted-foreground md:text-xl">
                Accede a nuestro marco metodológico completo, a los recursos para enseñanza híbrida y a la comunidad

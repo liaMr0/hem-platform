@@ -49,9 +49,11 @@ async function EnrolledCourses() {
                             <Link
                                 key={enrollmentId}
                                 href={`/courses/${courseId}/lesson`}
+                                className="block h-full"
                             > 
                                 <EnrolledCourseCard 
-                                    enrollment={enrollment} 
+                                    enrollment={enrollment}
+                                    isWrappedInLink={true}
                                 />
                             </Link>
                         );

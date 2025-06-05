@@ -75,8 +75,13 @@ export const LessonForm = ({ initialData, moduleId, courseId }: LessonFormProps)
 
       const lesson = await createLesson(formData);
 
+      // Verificar que lesson existe y tiene id
+      if (!lesson || !lesson.id) {
+        throw new Error('No se pudo crear la lección - ID no válido');
+      }
+
       const newLesson: Lesson = {
-        id: lesson?._id.toString(),
+        id: lesson.id, // Usar lesson.id directamente
         title: values.title,
         active: false,
         order: lessons.length,
@@ -90,7 +95,7 @@ export const LessonForm = ({ initialData, moduleId, courseId }: LessonFormProps)
       router.refresh();
     } catch (error) {
       console.error("Error creating lesson:", error);
-      toast.error("Algo salió mal.");
+      toast.error(error instanceof Error ? error.message : "Algo salió mal.");
     }
   };
 
@@ -98,11 +103,24 @@ export const LessonForm = ({ initialData, moduleId, courseId }: LessonFormProps)
     try {
       setIsUpdating(true);
       await reOrderLesson(updateData);
+      
+      // Actualizar el estado local después del reordenamiento exitoso
+      setLessons((prevLessons) => {
+        const updatedLessons = [...prevLessons];
+        updateData.forEach(({ id, position }) => {
+          const lessonIndex = updatedLessons.findIndex(lesson => lesson.id === id);
+          if (lessonIndex !== -1) {
+            updatedLessons[lessonIndex].order = position;
+          }
+        });
+        return updatedLessons.sort((a, b) => a.order - b.order);
+      });
+      
       toast.success("Lecciones reordenadas.");
       router.refresh();
     } catch (error) {
       console.error("Error reordering lessons:", error);
-      toast.error("Algo salió mal.");
+      toast.error("Error al reordenar las lecciones.");
     } finally {
       setIsUpdating(false);
     }
@@ -136,6 +154,7 @@ export const LessonForm = ({ initialData, moduleId, courseId }: LessonFormProps)
       setLessons((prevLessons) =>
         prevLessons.filter((lesson) => lesson.id !== lessonToEdit.id)
       );
+      toast.success("Lección eliminada correctamente.");
     }
     setIsEditing(false);
     setLessonToEdit(null);

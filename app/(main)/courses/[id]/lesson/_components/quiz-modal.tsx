@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useEffect } from "react";
 import { toast } from "sonner";
 
 interface QuizOption {
@@ -43,11 +43,59 @@ function QuizModal({ quizzes, courseId, quizSetId, open, setOpen }: QuizModalPro
   const currentQuiz = quizzes?.[quizIndex];
   const [answers, setAnswers] = useState<Answer[]>([]);
 
+  // 🔍 DEBUGGING: Agregar useEffect para monitorear cambios
+  useEffect(() => {
+    console.log("QuizModal - Props received:");
+    console.log("- quizzes:", quizzes);
+    console.log("- courseId:", courseId);
+    console.log("- quizSetId:", quizSetId);
+    console.log("- open:", open);
+    console.log("- totalQuizzes:", totalQuizzes);
+    console.log("- currentQuiz:", currentQuiz);
+  }, [quizzes, courseId, quizSetId, open, totalQuizzes, currentQuiz]);
+
+  // 🔍 DEBUGGING: Log cuando el modal debería abrirse
+  useEffect(() => {
+    if (open) {
+      console.log("🚀 QuizModal should be OPEN now!");
+      console.log("Dialog open prop:", open);
+    } else {
+      console.log("❌ QuizModal should be CLOSED");
+    }
+  }, [open]);
+
+  // ❌ PROBLEMA POTENCIAL: Esta validación podría estar causando el problema
+  // Si quizzes está vacío, el modal no se renderiza en absoluto
+  // Comentemos esto temporalmente para debug
+  /*
   if (!quizzes || quizzes.length === 0) {
+    console.log("⚠️ QuizModal: No quizzes provided, returning null");
     return null;
+  }
+  */
+
+  // 🔍 DEBUGGING: Renderizar mensaje si no hay quizzes
+  if (!quizzes || quizzes.length === 0) {
+    console.log("⚠️ QuizModal: No quizzes provided, showing debug dialog");
+    return (
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-[95%] block">
+          <DialogTitle>Debug - No Quizzes</DialogTitle>
+          <div className="p-4">
+            <p>No quizzes were provided to the modal.</p>
+            <p>Quizzes: {JSON.stringify(quizzes)}</p>
+            <p>Open: {open.toString()}</p>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   const quizChangeHandler = (type: "next" | "prev") => {
+    console.log("🔄 Quiz navigation:", type);
     const nextQuizIndex = quizIndex + 1;
     const prevQuizIndex = quizIndex - 1;
 
@@ -67,6 +115,7 @@ function QuizModal({ quizzes, courseId, quizSetId, open, setOpen }: QuizModalPro
     selected: string
   ) => {
     const checked = event.target.checked;
+    console.log("📝 Answer updated:", { quizId, selected, checked });
 
     if (!checked) return;
 
@@ -83,6 +132,7 @@ function QuizModal({ quizzes, courseId, quizSetId, open, setOpen }: QuizModalPro
   };
 
   const submitQuiz = async () => {
+    console.log("📤 Submitting quiz with answers:", answers);
     try {
       if (answers.length === 0) {
         toast.error("Por favor responde al menos una pregunta.");
@@ -99,10 +149,21 @@ function QuizModal({ quizzes, courseId, quizSetId, open, setOpen }: QuizModalPro
     }
   };
 
+  console.log("🎯 QuizModal rendering with open =", open);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[95%] block">
         <DialogTitle className="sr-only">Detalles del Quiz</DialogTitle>
+        
+        {/* 🔍 DEBUGGING: Mostrar información de debug */}
+        <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
+          <div>Debug Info:</div>
+          <div>Open: {open.toString()}</div>
+          <div>Total Quizzes: {totalQuizzes}</div>
+          <div>Current Quiz Index: {quizIndex}</div>
+          <div>Current Quiz Title: {currentQuiz?.title || 'No title'}</div>
+        </div>
         
         <div className="pb-4 border-b border-border text-sm">
           <span className="text-green-600 inline-block mr-1">

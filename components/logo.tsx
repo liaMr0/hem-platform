@@ -1,8 +1,6 @@
 import Image from 'next/image';
 import React from 'react';
-import logo from "@/public/assets/images/forward.png"
-import { cn } from '@/lib/utils';
-import { Brain} from 'lucide-react';
+import logo from "@/public/assets/images/freelancer_17637190.png"
 import Link from 'next/link';
 
 const Logo = () => {

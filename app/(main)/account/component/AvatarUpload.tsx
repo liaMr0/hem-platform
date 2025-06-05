@@ -66,7 +66,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
     setImageError(true);
   };
 
-  const displayUrl = imageError ? '/assets/images/user-128.png' : avatarUrl;
+  const displayUrl = imageError ? '/assets/images/avatar.png' : avatarUrl;
 
   return (
     <div className={cn('relative inline-block', className)}>

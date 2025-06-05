@@ -35,9 +35,10 @@ export const VideoUrlForm = ({ initialData, courseId, lessonId }:any) => {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
 
+  // Solución: Asegurar que los valores nunca sean null
   const [state, setState] = useState({
-    url: initialData?.url,
-    duration: formatDuration(initialData?.duration),
+    url: initialData?.url || "", // Usar string vacío en lugar de null
+    duration: formatDuration(initialData?.duration) || "", // Usar string vacío en lugar de null
   });
 
   const toggleEdit = () => setIsEditing((current) => !current);
@@ -58,9 +59,16 @@ export const VideoUrlForm = ({ initialData, courseId, lessonId }:any) => {
       if (splitted.length === 3) {
         payload["duration"] = splitted[0] * 3600 + splitted[1] * 60 + splitted[2] * 1;
         await updateLesson(lessonId,payload)
+        
+        // Actualizar el estado local con los nuevos valores
+        setState({
+          url: values?.url || "",
+          duration: values?.duration || "",
+        });
+        
         toast.success("Lección actualizada.");
         toggleEdit();
-      router.refresh();
+        router.refresh();
       } else {
         toast.error("El formato de duración debe ser hh:mm:ss");
       } 
@@ -87,11 +95,13 @@ export const VideoUrlForm = ({ initialData, courseId, lessonId }:any) => {
       {!isEditing && (
         <>
           <p className="text-sm mt-2">
-            {state?.url}
+            {state?.url || "No hay URL configurada"}
           </p>
-          <div className="mt-6">
-            <VideoPlayer url={state?.url} />
-          </div>
+          {state?.url && (
+            <div className="mt-6">
+              <VideoPlayer url={state?.url} />
+            </div>
+          )}
         </>
       )}
       {isEditing && (
@@ -112,6 +122,7 @@ export const VideoUrlForm = ({ initialData, courseId, lessonId }:any) => {
                       disabled={isSubmitting}
                       placeholder="https://www.youtube.com/watch?v"
                       {...field}
+                      value={field.value || ""} // Asegurar que nunca sea null
                     />
                   </FormControl>
                   <FormMessage />
@@ -130,6 +141,7 @@ export const VideoUrlForm = ({ initialData, courseId, lessonId }:any) => {
                       disabled={isSubmitting}
                       placeholder="10:30:18"
                       {...field}
+                      value={field.value || ""} // Asegurar que nunca sea null
                     />
                   </FormControl>
                   <FormMessage />

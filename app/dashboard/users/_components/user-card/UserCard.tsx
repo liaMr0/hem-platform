@@ -125,7 +125,7 @@ export function UserCard({
             <div className="flex items-center space-x-4">
               <Avatar className="h-12 w-12">
                 <AvatarImage 
-                  src={user.profilePicture || "/assets/images/user-128.png"} 
+                  src={user.profilePicture || "/assets/images/avatar.png"} 
                   alt={`${user.firstName} ${user.lastName}`} 
                 />
                 <AvatarFallback>

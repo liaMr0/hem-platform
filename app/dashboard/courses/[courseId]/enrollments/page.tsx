@@ -31,7 +31,7 @@ const EnrollmentsPage = async ({ params }) => {
       status: enrollment.status,
       progress: enrollment.progress || 0,
       lastAccessed: enrollment.last_accessed,
-      profilePicture: enrollment.student?.profilePicture || '/assets/images/user-128.png'
+      profilePicture: enrollment.student?.profilePicture || '/assets/images/avatar.png'
     })) || [];
 
     console.log('Transformed enrollment data:', enrollmentData);

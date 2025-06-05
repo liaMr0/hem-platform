@@ -11,56 +11,7 @@ import mongoose from "mongoose";
 import { Enrollment } from "@/model/enrollment-model";
 
 
-// Nueva función para obtener cursos del dashboard basado en rol
-export async function getDashboardCourses(instructorId?: string) {
-    try {
-        let query = {};
-        
-        // Si se proporciona instructorId, filtrar solo cursos de ese instructor
-        if (instructorId) {
-            if (!mongoose.Types.ObjectId.isValid(instructorId)) {
-                throw new Error('Invalid instructor ID format');
-            }
-            query = { instructor: instructorId };
-        }
-
-        const courses = await Course.find(query)
-            .select([
-                "title",
-                "subtitle", 
-                "thumbnail",
-                "modules",
-                "category",
-                "instructor",
-                "active",
-                "price",
-                "createdOn",
-                "modifiedOn"
-            ])
-            .populate({
-                path: "instructor",
-                model: User,
-                select: "_id firstName lastName designation profilePicture"
-            })
-            .populate({
-                path: "category",
-                select: "title"
-            })
-            .populate({
-                path: "modules",
-                model: Module,
-                select: "title"
-            })
-            .sort({ createdOn: -1 })
-            .lean();
-
-        return replaceMongoIdInArray(courses);
-    } catch (error) {
-        console.error('Error in getDashboardCourses:', error);
-        throw new Error(`Failed to get dashboard courses: ${error.message}`);
-    }
-}
-
+// queries/courses.ts - Función getCourseDetails actualizada
 export async function getCourseDetails(courseId: string) {
     try {
         // Validar que courseId existe y es válido
@@ -87,6 +38,21 @@ export async function getCourseDetails(courseId: string) {
         }
 
         const course = await Course.findById(courseId)
+            .select([
+                "title",
+                "subtitle",
+                "description",
+                "thumbnail",
+                "modules",
+                "instructor",
+                "testimonials",
+                "quizSet",
+                "active",
+                "learning",
+                "documents", // Agregar documentos a la selección
+                "createdOn",
+                "modifiedOn"
+            ])
             .populate({
                 path: "modules",
                 model: Module,
@@ -118,6 +84,57 @@ export async function getCourseDetails(courseId: string) {
     } catch (error) {
         console.error('Error in getCourseDetails:', error);
         throw new Error(`Failed to get course details: ${error.message}`);
+    }
+}
+
+// También actualizar getDashboardCourses para incluir conteo de documentos
+export async function getDashboardCourses(instructorId?: string) {
+    try {
+        let query = {};
+        
+        // Si se proporciona instructorId, filtrar solo cursos de ese instructor
+        if (instructorId) {
+            if (!mongoose.Types.ObjectId.isValid(instructorId)) {
+                throw new Error('Invalid instructor ID format');
+            }
+            query = { instructor: instructorId };
+        }
+
+        const courses = await Course.find(query)
+            .select([
+                "title",
+                "subtitle", 
+                "thumbnail",
+                "modules",
+                "category",
+                "instructor",
+                "active",
+                "price",
+                "documents", // Incluir documentos para mostrar conteo
+                "createdOn",
+                "modifiedOn"
+            ])
+            .populate({
+                path: "instructor",
+                model: User,
+                select: "_id firstName lastName designation profilePicture"
+            })
+            .populate({
+                path: "category",
+                select: "title"
+            })
+            .populate({
+                path: "modules",
+                model: Module,
+                select: "title"
+            })
+            .sort({ createdOn: -1 })
+            .lean();
+
+        return replaceMongoIdInArray(courses);
+    } catch (error) {
+        console.error('Error in getDashboardCourses:', error);
+        throw new Error(`Failed to get dashboard courses: ${error.message}`);
     }
 }
 

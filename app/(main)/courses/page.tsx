@@ -1,4 +1,4 @@
-// app/courses/page.tsx - Versión con progreso de usuario
+// app/courses/page.tsx - Versión corregida para Next.js 15
 import SearchCourse from "./_components/SearchCourse";
 import CourseCard from "./_components/CourseCard";
 import { searchCourses, getCourseProgressStats } from "@/queries/courses";
@@ -8,21 +8,24 @@ import Link from "next/link";
 import { auth } from "@/auth";
 
 interface CoursesPageProps {
-  searchParams: {
+  searchParams: Promise<{
     search?: string;
     sortBy?: 'newest' | 'oldest' | 'title';
-  };
+  }>;
 }
 
 const CoursesPage = async ({ searchParams }: CoursesPageProps) => {
+  // ✅ CORREGIDO: Await searchParams antes de usar sus propiedades
+  const { search, sortBy } = await searchParams;
+  
   // Obtener sesión del usuario actual
   const session = await auth();
   const userId = session?.user?.id;
 
   // Usar la función searchCourses en lugar de getCourseList + filtrado manual
   const courses = await searchCourses({
-    search: searchParams.search,
-    sortBy: searchParams.sortBy || 'newest'
+    search: search, // Usar la variable desestructurada
+    sortBy: sortBy || 'newest' // Usar la variable desestructurada
   });
 
   // Obtener enrollments del usuario si está autenticado
@@ -113,25 +116,24 @@ const CoursesPage = async ({ searchParams }: CoursesPageProps) => {
         {/* Contenido principal */}
         <main className="space-y-8">
           {/* Filtros activos */}
-          {(searchParams.search || (searchParams.sortBy && searchParams.sortBy !== 'newest')) && (
+          {(search || (sortBy && sortBy !== 'newest')) && (
             <div className="flex flex-wrap gap-2 items-center">
               <span className="text-sm text-gray-600">Filtros activos:</span>
-              {searchParams.search && (
+              {search && (
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  Búsqueda: "{searchParams.search}"
+                  Búsqueda: "{search}"
                 </span>
               )}
-              {searchParams.sortBy && searchParams.sortBy !== 'newest' && (
+              {sortBy && sortBy !== 'newest' && (
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                   Orden: {
-                    searchParams.sortBy === 'title' ? 'Por título' : 
-                    searchParams.sortBy === 'oldest' ? 'Más antiguos' : 'Más recientes'
+                    sortBy === 'title' ? 'Por título' : 
+                    sortBy === 'oldest' ? 'Más antiguos' : 'Más recientes'
                   }
                 </span>
               )}
             </div>
           )}
-
 
           {/* Grid de cursos mejorado */}
           {courses.length > 0 ? (
@@ -160,8 +162,8 @@ const CoursesPage = async ({ searchParams }: CoursesPageProps) => {
                   No se encontraron cursos
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  {searchParams.search 
-                    ? `No hay cursos que coincidan con "${searchParams.search}"`
+                  {search 
+                    ? `No hay cursos que coincidan con "${search}"`
                     : "No hay cursos que coincidan con tu búsqueda actual"
                   }
                 </p>

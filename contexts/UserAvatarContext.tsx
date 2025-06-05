@@ -19,7 +19,7 @@ interface UserAvatarProviderProps {
 
 export const UserAvatarProvider: React.FC<UserAvatarProviderProps> = ({ children }) => {
   const { data: session } = useSession();
-  const [avatarUrl, setAvatarUrl] = useState<string>('/assets/images/user-128.png');
+  const [avatarUrl, setAvatarUrl] = useState<string>('/assets/images/avatar.png');
   const [isLoading, setIsLoading] = useState(false);
 
   // Cargar imagen inicial del usuario

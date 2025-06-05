@@ -1,7 +1,7 @@
 // app/admin/users/_components/FiltersSection.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -34,6 +34,69 @@ export function FiltersSection({
 }: FiltersSectionProps) {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
+  // Debounced search handler
+  const debouncedSearchUpdate = useDebouncedCallback(
+    (value: string) => {
+      onUpdateFilter('searchTerm', value);
+    },
+    300 // 300ms delay
+  );
+
+  // Memoized handlers to prevent unnecessary re-renders
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    debouncedSearchUpdate(e.target.value);
+  }, [debouncedSearchUpdate]);
+
+  const handleRoleChange = useCallback((value: string) => {
+    onUpdateFilter('roleFilter', value);
+  }, [onUpdateFilter]);
+
+  const handleStatusChange = useCallback((value: string) => {
+    onUpdateFilter('statusFilter', value);
+  }, [onUpdateFilter]);
+
+  const handleSortChange = useCallback((value: string) => {
+    const [field, order] = value.split('-');
+    onUpdateFilter('sortBy', field);
+    onUpdateFilter('sortOrder', order as 'asc' | 'desc');
+  }, [onUpdateFilter]);
+
+  const handleToggleAdvanced = useCallback(() => {
+    setShowAdvancedFilters(prev => !prev);
+  }, []);
+
+  // Memoized sort value to prevent recalculation
+  const sortValue = useMemo(() => {
+    return `${filters.sortBy}-${filters.sortOrder}`;
+  }, [filters.sortBy, filters.sortOrder]);
+
+  // Memoized role options to prevent recreation
+  const roleOptions = useMemo(() => [
+    { value: "all", label: "Todos los roles" },
+    { value: "student", label: "Estudiante" },
+    { value: "instructor", label: "Instructor" },
+    { value: "admin", label: "Administrador" }
+  ], []);
+
+  // Memoized status options to prevent recreation
+  const statusOptions = useMemo(() => [
+    { value: "all", label: "Todos los estados" },
+    { value: "pending", label: "Pendiente" },
+    { value: "approved", label: "Aprobado" },
+    { value: "rejected", label: "Rechazado" },
+    { value: "suspended", label: "Suspendido" }
+  ], []);
+
+  // Memoized sort options to prevent recreation
+  const sortOptions = useMemo(() => [
+    { value: "createdAt-desc", label: "Más recientes" },
+    { value: "createdAt-asc", label: "Más antiguos" },
+    { value: "firstName-asc", label: "Nombre A-Z" },
+    { value: "firstName-desc", label: "Nombre Z-A" },
+    { value: "email-asc", label: "Email A-Z" },
+    { value: "email-desc", label: "Email Z-A" }
+  ], []);
+
   return (
     <Card className="mb-6">
       <CardHeader>
@@ -42,7 +105,7 @@ export function FiltersSection({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            onClick={handleToggleAdvanced}
           >
             {showAdvancedFilters ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             {showAdvancedFilters ? 'Ocultar' : 'Mostrar'} filtros avanzados
@@ -58,8 +121,8 @@ export function FiltersSection({
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por nombre, email o teléfono..."
-                  value={filters.searchTerm}
-                  onChange={(e) => onUpdateFilter('searchTerm', e.target.value)}
+                  defaultValue={filters.searchTerm}
+                  onChange={handleSearchChange}
                   className="pl-10"
                 />
               </div>
@@ -68,53 +131,49 @@ export function FiltersSection({
             <div className="flex flex-wrap gap-2">
               <Select 
                 value={filters.roleFilter} 
-                onValueChange={(value) => onUpdateFilter('roleFilter', value)}
+                onValueChange={handleRoleChange}
               >
                 <SelectTrigger className="w-[140px]">
                   <SelectValue placeholder="Rol" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos los roles</SelectItem>
-                  <SelectItem value="student">Estudiante</SelectItem>
-                  <SelectItem value="instructor">Instructor</SelectItem>
-                  <SelectItem value="admin">Administrador</SelectItem>
+                  {roleOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
               <Select 
                 value={filters.statusFilter} 
-                onValueChange={(value) => onUpdateFilter('statusFilter', value)}
+                onValueChange={handleStatusChange}
               >
                 <SelectTrigger className="w-[140px]">
                   <SelectValue placeholder="Estado" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos los estados</SelectItem>
-                  <SelectItem value="pending">Pendiente</SelectItem>
-                  <SelectItem value="approved">Aprobado</SelectItem>
-                  <SelectItem value="rejected">Rechazado</SelectItem>
-                  <SelectItem value="suspended">Suspendido</SelectItem>
+                  {statusOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
               <Select 
-                value={`${filters.sortBy}-${filters.sortOrder}`} 
-                onValueChange={(value) => {
-                  const [field, order] = value.split('-');
-                  onUpdateFilter('sortBy', field);
-                  onUpdateFilter('sortOrder', order as 'asc' | 'desc');
-                }}
+                value={sortValue} 
+                onValueChange={handleSortChange}
               >
                 <SelectTrigger className="w-[160px]">
                   <SelectValue placeholder="Ordenar por" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="createdAt-desc">Más recientes</SelectItem>
-                  <SelectItem value="createdAt-asc">Más antiguos</SelectItem>
-                  <SelectItem value="firstName-asc">Nombre A-Z</SelectItem>
-                  <SelectItem value="firstName-desc">Nombre Z-A</SelectItem>
-                  <SelectItem value="email-asc">Email A-Z</SelectItem>
-                  <SelectItem value="email-desc">Email Z-A</SelectItem>
+                  {sortOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 

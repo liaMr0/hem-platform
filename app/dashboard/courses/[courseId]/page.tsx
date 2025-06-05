@@ -1,11 +1,9 @@
 import { IconBadge } from "@/components/icon-badge";
 import {
-  CircleDollarSign,
-  File,
   LayoutDashboard,
   ListChecks,
+  FileText,
 } from "lucide-react";
-import { CategoryForm } from "./_components/category-form";
 import { DescriptionForm } from "./_components/description-form";
 import { ImageForm } from "./_components/image-form";
 import { ModulesForm } from "./_components/module-form";
@@ -26,117 +24,159 @@ interface PageProps {
 }
 
 const EditCourse = async ({ params }: PageProps) => {
-  // Await para extraer el courseId de los parámetros
-  const { courseId } = await params;
-  
-  // Validar que courseId existe
-  if (!courseId) {
-    throw new Error("Course ID is required");
-  }
-  
-  const course = await getCourseDetails(courseId);
+  try {
+    // Await para extraer el courseId de los parámetros
+    const { courseId } = await params;
+    
+    // Validar que courseId existe
+    if (!courseId) {
+      throw new Error("Course ID is required");
+    }
+    
+    const course = await getCourseDetails(courseId);
 
-  // Sanitize function para manejar ObjectID y Buffer
-  function sanitizeData(data: any) {
-    return JSON.parse(
-      JSON.stringify(data, (key, value) => {
-        if (value instanceof ObjectId) {
-          return value.toString();
-        }
-        if (Buffer.isBuffer(value)) {
-          return value.toString("base64");
-        }
-        return value;
-      })
-    );
-  }
+    if (!course) {
+      throw new Error("Course not found");
+    }
 
-  const rawmodules = await replaceMongoIdInArray(course?.modules || []).sort((a: any, b: any) => a.order - b.order);
-  const modules = sanitizeData(rawmodules);
+    // Sanitize function para manejar ObjectID y Buffer
+    function sanitizeData(data: any) {
+      return JSON.parse(
+        JSON.stringify(data, (key, value) => {
+          if (value instanceof ObjectId) {
+            return value.toString();
+          }
+          if (Buffer.isBuffer(value)) {
+            return value.toString("base64");
+          }
+          return value;
+        })
+      );
+    }
 
-  // Sanitizar los documentos también
-  const documents = course?.documents ? sanitizeData(course.documents) : [];
+    const rawmodules = await replaceMongoIdInArray(course?.modules || []).sort((a: any, b: any) => a.order - b.order);
+    const modules = sanitizeData(rawmodules);
 
-  const allQuizSets = await getAllQuizSets(true);
-  let mappedQuizSet = [];
-  if (allQuizSets && allQuizSets.length > 0) {
-    mappedQuizSet = allQuizSets.map((quizSet: any) => {
-      return {
-        value: quizSet.id,
-        label: quizSet.title,
-      };
-    });
-  }
+    // Sanitizar los documentos también
+    const documents = course?.documents ? sanitizeData(course.documents) : [];
 
-  return (
-    <>
-      {!course.active && (
-        <AlertBanner
-          label="Este curso no está publicado. No será visible."
-          variant="warning"
-        />
-      )}
+    const allQuizSets = await getAllQuizSets(true);
+    let mappedQuizSet = [];
+    if (allQuizSets && allQuizSets.length > 0) {
+      mappedQuizSet = allQuizSets.map((quizSet: any) => {
+        return {
+          value: quizSet.id,
+          label: quizSet.title,
+        };
+      });
+    }
 
-      <div className="p-6">
-        <div className="flex items-center justify-end">
-          <CourseActions courseId={courseId} isActive={course?.active} />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16">
-          <div>
-            <div className="flex items-center gap-x-2">
-              <IconBadge icon={LayoutDashboard} />
-              <h2 className="text-xl">Personaliza tu curso</h2>
-            </div>
-            <TitleForm
-              initialData={{
-                title: course?.title,
-              }}
-              courseId={courseId}
-            />
-            <SubTitleForm
-              initialData={{
-                subtitle: course?.subtitle,
-              }}
-              courseId={courseId}
-            />
-            <DescriptionForm
-              initialData={{ description: course?.description }}
-              courseId={courseId}
-            />
+    return (
+      <>
+        {!course.active && (
+          <AlertBanner
+            label="Este curso no está publicado. No será visible."
+            variant="warning"
+          />
+        )}
 
-            <ImageForm
-              initialData={{
-                imageUrl: `/assets/images/courses/${course?.thumbnail}`,
-              }}
-              courseId={courseId}
-            />
+        <div className="p-6">
+          <div className="flex items-center justify-end">
+            <CourseActions courseId={courseId} isActive={course?.active} />
           </div>
-          <div className="space-y-6">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16">
+            {/* Columna izquierda - Información básica del curso */}
             <div>
-              <div className="flex items-center gap-x-2 mb-6">
-                <IconBadge icon={ListChecks} />
-                <h2 className="text-xl">Módulos del curso</h2>
+              <div className="flex items-center gap-x-2">
+                <IconBadge icon={LayoutDashboard} />
+                <h2 className="text-xl">Personaliza tu curso</h2>
               </div>
-
-              <ModulesForm initialData={modules} courseId={courseId} />
-              <FileUploadForm
+              
+              <TitleForm
                 initialData={{
-                  documents: documents,
+                  title: course?.title,
                 }}
                 courseId={courseId}
               />
-
-              <QuizSetForm
-                initialData={{ quizSetId: course?.quizSet?._id?.toString() }}
+              
+              <SubTitleForm
+                initialData={{
+                  subtitle: course?.subtitle,
+                }}
                 courseId={courseId}
-                options={mappedQuizSet}
               />
+              
+              <DescriptionForm
+                initialData={{ description: course?.description }}
+                courseId={courseId}
+              />
+
+              <ImageForm
+                initialData={{
+                  imageUrl: `/assets/images/courses/${course?.thumbnail}`,
+                }}
+                courseId={courseId}
+              />
+            </div>
+            
+            {/* Columna derecha - Contenido del curso */}
+            <div className="space-y-6">
+              {/* Sección de Módulos */}
+              <div>
+                <div className="flex items-center gap-x-2 mb-6">
+                  <IconBadge icon={ListChecks} />
+                  <h2 className="text-xl">Módulos del curso</h2>
+                </div>
+
+                <ModulesForm initialData={modules} courseId={courseId} />
+              </div>
+
+              {/* Sección de Documentos */}
+              <div>
+                <div className="flex items-center gap-x-2 mb-6">
+                  <IconBadge icon={FileText} />
+                  <h2 className="text-xl">Recursos del curso</h2>
+                </div>
+
+                <FileUploadForm
+                  initialData={{
+                    documents: documents,
+                  }}
+                  courseId={courseId}
+                />
+              </div>
+
+              {/* Sección de Quiz */}
+              <div>
+                <QuizSetForm
+                  initialData={{ quizSetId: course?.quizSet?._id?.toString() }}
+                  courseId={courseId}
+                  options={mappedQuizSet}
+                />
+              </div>
             </div>
           </div>
         </div>
+      </>
+    );
+  } catch (error) {
+    console.error("Error loading course:", error);
+    
+    return (
+      <div className="p-6">
+        <AlertBanner
+          label={`Error al cargar el curso: ${error.message || 'Unknown error'}`}
+          variant="destructive"
+        />
+        <div className="mt-6 text-center">
+          <p className="text-muted-foreground">
+            No se pudo cargar la información del curso. Por favor, verifica que el ID del curso sea válido e inténtalo de nuevo.
+          </p>
+        </div>
       </div>
-    </>
-  );
+    );
+  }
 };
 
 export default EditCourse;

@@ -78,7 +78,7 @@ const userSchema = new Schema<IUser>({
   profilePicture: {
     required: false,
     type: String,
-    default: "/assets/images/user-128.png"
+    default: "/assets/images/avatar.png"
   },
   designation: {
     required: false,

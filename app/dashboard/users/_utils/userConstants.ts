@@ -55,7 +55,7 @@ export const API_ENDPOINTS = {
 } as const;
 
 export const DEFAULT_VALUES = {
-  PROFILE_PICTURE: '/assets/images/user-128.png',
+  PROFILE_PICTURE: '/assets/images/avatar.png',
   PAGE_SIZE: 10,
   DEBOUNCE_DELAY: 300,
 } as const;

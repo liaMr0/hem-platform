@@ -1,79 +1,143 @@
-// app/admin/users/_hooks/useUsers.ts (Updated)
-import { useState, useEffect, useCallback } from "react";
-import { Session } from "next-auth";
-import { IUser } from "@/model/user-model";
-import { UserFilters } from "../_types/filter-types";
-import { UserService } from "../_services/userService";
-import { USERS_PER_PAGE } from "../_utils/constants";
+// app/admin/users/_hooks/useUsers.ts
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { Session } from 'next-auth';
+import { IUser } from '@/model/user-model';
+import { UserFilters } from './useUserFilters';
 
-interface UseUsersProps {
+interface UseUsersParams {
   session: Session | null;
   filters: UserFilters;
   enabled: boolean;
 }
 
-export function useUsers({ session, filters, enabled }: UseUsersProps) {
+export function useUsers({ session, filters, enabled }: UseUsersParams) {
   const [users, setUsers] = useState<IUser[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  
+  // Ref to track if component is mounted
+  const isMountedRef = useRef(true);
+  
+  // Ref to track current request to avoid race conditions
+  const currentRequestRef = useRef<AbortController | null>(null);
 
-  const loadUsers = useCallback(async () => {
-    if (!session?.user || !enabled) return;
+  // Memoized query parameters to prevent unnecessary API calls
+  const queryParams = useMemo(() => {
+    const params = new URLSearchParams();
     
-    setLoading(true);
+    if (filters.searchTerm) {
+      params.set('search', filters.searchTerm);
+    }
+    if (filters.roleFilter && filters.roleFilter !== 'all') {
+      params.set('role', filters.roleFilter);
+    }
+    if (filters.statusFilter && filters.statusFilter !== 'all') {
+      params.set('status', filters.statusFilter);
+    }
+    if (filters.sortBy) {
+      params.set('sortBy', filters.sortBy);
+    }
+    if (filters.sortOrder) {
+      params.set('sortOrder', filters.sortOrder);
+    }
+    
+    params.set('page', currentPage.toString());
+    params.set('limit', '10'); // Or make this configurable
+    
+    return params.toString();
+  }, [filters, currentPage]);
+
+  const fetchUsers = useCallback(async (showLoading = true) => {
+    if (!enabled || !session) return;
+
+    // Cancel previous request
+    if (currentRequestRef.current) {
+      currentRequestRef.current.abort();
+    }
+
+    // Create new abort controller
+    const abortController = new AbortController();
+    currentRequestRef.current = abortController;
+
     try {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: USERS_PER_PAGE.toString(),
-        sortBy: filters.sortBy,
-        sortOrder: filters.sortOrder,
+      if (showLoading) {
+        setLoading(true);
+      }
+
+      const response = await fetch(`/api/users?${queryParams}`, {
+        signal: abortController.signal,
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
       });
 
-      if (filters.searchTerm) params.append("search", filters.searchTerm);
-      if (filters.roleFilter && filters.roleFilter !== "all") {
-        params.append("role", filters.roleFilter);
-      }
-      if (filters.statusFilter && filters.statusFilter !== "all") {
-        params.append("status", filters.statusFilter);
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
       }
 
-      const data = await UserService.fetchUsers(params);
-      setUsers(data.users);
-      setTotalPages(data.totalPages);
-      setTotalUsers(data.totalUsers);
+      const data = await response.json();
+
+      // Only update state if component is still mounted and this is the current request
+      if (isMountedRef.current && currentRequestRef.current === abortController) {
+        setUsers(data.users || []);
+        setTotalUsers(data.total || 0);
+        setTotalPages(data.totalPages || 0);
+      }
     } catch (error) {
-      console.error("Error loading users:", error);
+      if (error instanceof Error && error.name === 'AbortError') {
+        // Request was cancelled, ignore
+        return;
+      }
+      
+      console.error('Error fetching users:', error);
+      
+      if (isMountedRef.current && currentRequestRef.current === abortController) {
+        setUsers([]);
+        setTotalUsers(0);
+        setTotalPages(0);
+      }
     } finally {
-      setLoading(false);
+      if (isMountedRef.current && currentRequestRef.current === abortController) {
+        setLoading(false);
+        currentRequestRef.current = null;
+      }
     }
-  }, [session, enabled, currentPage, filters]);
+  }, [enabled, session, queryParams]);
 
   const refreshUsers = useCallback(() => {
-    if (enabled) {
-      loadUsers();
-    }
-  }, [enabled, loadUsers]);
+    fetchUsers(false); // Don't show loading for refresh
+  }, [fetchUsers]);
 
-  // Effect for search debouncing
+  // Optimized page change handler
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
+
+  // Effect to fetch users when dependencies change
   useEffect(() => {
-    if (!enabled) return;
+    if (enabled) {
+      fetchUsers();
+    }
+  }, [fetchUsers, enabled]);
 
-    const debounceTimer = setTimeout(() => {
+  // Reset page when filters change (except search which is debounced)
+  useEffect(() => {
+    if (currentPage !== 1) {
       setCurrentPage(1);
-      loadUsers();
-    }, 500);
-
-    return () => clearTimeout(debounceTimer);
-  }, [filters.searchTerm, filters.roleFilter, filters.statusFilter, filters.sortBy, filters.sortOrder, enabled, loadUsers]);
-
-  // Effect for page changes
-  useEffect(() => {
-    if (enabled) {
-      loadUsers();
     }
-  }, [currentPage, enabled, loadUsers]);
+  }, [filters.roleFilter, filters.statusFilter, filters.sortBy, filters.sortOrder]);
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      if (currentRequestRef.current) {
+        currentRequestRef.current.abort();
+      }
+    };
+  }, []);
 
   return {
     users,
@@ -81,7 +145,8 @@ export function useUsers({ session, filters, enabled }: UseUsersProps) {
     totalUsers,
     totalPages,
     currentPage,
-    setCurrentPage,
+    setCurrentPage: handlePageChange,
     refreshUsers,
+    fetchUsers,
   };
 }

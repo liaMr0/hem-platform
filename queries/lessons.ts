@@ -1,5 +1,4 @@
-
-// queries/lessons.ts (Corregido con mejor manejo de errores)
+// queries/lessons.ts (Corregido con serialización apropiada)
 import { replaceMongoIdInArray, replaceMongoIdInObject } from "@/lib/convertData";
 import { Lesson } from "@/model/lesson.model";
 import mongoose from "mongoose";
@@ -29,7 +28,9 @@ export async function getLesson(lessonId: string) {
 export async function create(lessonData: any) {
     try {
         const lesson = await Lesson.create(lessonData);
-        return JSON.parse(JSON.stringify(lesson));
+        // Convertir el documento de Mongoose a objeto plano
+        const plainLesson = lesson.toObject();
+        return replaceMongoIdInObject(plainLesson);
     } catch (error) {
         console.error('Error creating lesson:', error);
         throw new Error(error instanceof Error ? error.message : 'Unknown error');

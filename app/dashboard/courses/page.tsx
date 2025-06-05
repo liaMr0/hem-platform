@@ -51,7 +51,7 @@ const CoursesPage = async () => {
         </div>
 
         {/* Mostrar estadísticas básicas */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+        {/* <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
           <div className="rounded-lg border p-3">
             <div className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="text-sm font-medium">Total de Cursos</div>
@@ -87,7 +87,7 @@ const CoursesPage = async () => {
           </div>
 
           {/* Solo mostrar estadística de instructores para admin */}
-          {userRole === 'admin' && (
+          {/* {userRole === 'admin' && (
             <div className="rounded-lg border p-3">
               <div className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div className="text-sm font-medium">Instructores</div>
@@ -99,8 +99,8 @@ const CoursesPage = async () => {
                 Creadores de contenido
               </p>
             </div>
-          )}
-        </div>
+          )} */}
+        {/* </div> */} 
 
         {/* Tabla de cursos usando tus componentes existentes */}
         <DataTable 

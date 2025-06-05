@@ -1,7 +1,7 @@
 // app/admin/users/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useTransition, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -26,16 +26,8 @@ import { BulkActionDialog } from "./_components/BulkActionDialog";
 
 export default function UsersPage() {
   const { data: session, status } = useSession();
-  // if (!session?.user) {
-  //   redirect('/');
-  // }
-  //  const userRole = session.user.role;
-  
-  // // Solo el admin puede acceder a la gestión de usuarios
-  // if (userRole !== 'admin') {
-  //   redirect('/dashboard'); // Redirigir al dashboard principal
-  // }
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   // Estados de diálogos
   const [editingUser, setEditingUser] = useState<IUser | null>(null);
@@ -91,22 +83,27 @@ export default function UsersPage() {
     processing: bulkProcessing,
   } = useBulkActions({
     onSuccess: () => {
-      refreshUsers();
-      refreshStats();
-      clearSelection();
-      setBulkActionDialog({ open: false, action: null });
+      startTransition(() => {
+        refreshUsers();
+        refreshStats();
+        clearSelection();
+        setBulkActionDialog({ open: false, action: null });
+      });
     },
   });
 
-  // Handlers
-  const handleUserUpdate = (updatedUser: IUser) => {
-    refreshUsers();
-    refreshStats();
+  // Memoized handlers to prevent unnecessary re-renders
+  const handleUserUpdate = useCallback((updatedUser: IUser) => {
+    startTransition(() => {
+      refreshUsers();
+      refreshStats();
+    });
     toast.success('Usuario actualizado correctamente');
-  };
+  }, [refreshUsers, refreshStats]);
 
-  const handleUserDelete = async (userId: string) => {
+  const handleUserDelete = useCallback(async (userId: string) => {
     try {
+      // Optimistic update - remove from UI immediately
       const response = await fetch(`/api/users/${userId}`, {
         method: 'DELETE',
       });
@@ -114,22 +111,33 @@ export default function UsersPage() {
       if (!response.ok) {
         if (response.status === 404) {
           toast.info('Usuario ya eliminado');
-          refreshUsers();
+          startTransition(() => {
+            refreshUsers();
+          });
           return;
         }
         throw new Error('Error al eliminar el usuario');
       }
 
-      refreshUsers();
-      refreshStats();
+      // Update data in background
+      startTransition(() => {
+        refreshUsers();
+        refreshStats();
+      });
+      
       toast.success('Usuario eliminado correctamente');
     } catch (error) {
       console.error('Error al eliminar usuario:', error);
       toast.error('Error al eliminar el usuario');
+      
+      // Refresh to restore original state on error
+      startTransition(() => {
+        refreshUsers();
+      });
     }
-  };
+  }, [refreshUsers, refreshStats]);
 
-  const handleStatusChange = async (userId: string, newStatus: IUser['status']) => {
+  const handleStatusChange = useCallback(async (userId: string, newStatus: IUser['status']) => {
     try {
       const response = await fetch(`/api/users/${userId}`, {
         method: 'PATCH',
@@ -141,8 +149,10 @@ export default function UsersPage() {
         throw new Error('Error al actualizar el estado');
       }
 
-      refreshUsers();
-      refreshStats();
+      startTransition(() => {
+        refreshUsers();
+        refreshStats();
+      });
       
       const statusTexts = {
         approved: 'aprobado',
@@ -155,27 +165,47 @@ export default function UsersPage() {
     } catch (error) {
       toast.error('Error al actualizar el estado del usuario');
     }
-  };
+  }, [refreshUsers, refreshStats]);
 
-  const handleUserCreated = (newUser: IUser) => {
-    refreshUsers();
-    refreshStats();
+  const handleUserCreated = useCallback((newUser: IUser) => {
+    startTransition(() => {
+      refreshUsers();
+      refreshStats();
+    });
     toast.success(`Usuario ${newUser.firstName} ${newUser.lastName} creado correctamente`);
-  };
+  }, [refreshUsers, refreshStats]);
 
-  const handleBulkAction = (action: BulkActionDialogState['action']) => {
+  const handleBulkAction = useCallback((action: BulkActionDialogState['action']) => {
     if (selectedUsers.length === 0) {
       toast.error('Selecciona al menos un usuario');
       return;
     }
     setBulkActionDialog({ open: true, action });
-  };
+  }, [selectedUsers.length]);
 
-  const confirmBulkAction = async () => {
+  const confirmBulkAction = useCallback(async () => {
     if (!bulkActionDialog.action) return;
     
     await executeBulkAction(bulkActionDialog.action, selectedUsers);
-  };
+  }, [bulkActionDialog.action, executeBulkAction, selectedUsers]);
+
+  // Memoized dialog handlers
+  const handleCreateUserDialog = useCallback(() => {
+    setCreateUserDialog(true);
+  }, []);
+
+  const handleEditUserClose = useCallback((open: boolean) => {
+    if (!open) setEditingUser(null);
+  }, []);
+
+  const handleBulkDialogCancel = useCallback(() => {
+    setBulkActionDialog({ open: false, action: null });
+  }, []);
+
+  // Memoized pending count
+  const pendingCount = useMemo(() => {
+    return stats?.byStatus.pending || 0;
+  }, [stats?.byStatus.pending]);
 
   // Loading states
   if (authLoading || usersLoading) {
@@ -188,7 +218,7 @@ export default function UsersPage() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <UsersHeader onCreateUser={() => setCreateUserDialog(true)} />
+      <UsersHeader onCreateUser={handleCreateUserDialog} />
       
       {/* <StatsCards stats={stats} /> */}
       
@@ -203,7 +233,7 @@ export default function UsersPage() {
         selectedCount={selectedUsers.length}
         onClearSelection={clearSelection}
         onBulkAction={handleBulkAction}
-        pendingCount={stats?.byStatus.pending || 0}
+        pendingCount={pendingCount}
       />
 
       <UsersGrid
@@ -230,7 +260,7 @@ export default function UsersPage() {
       <EditUserDialog
         user={editingUser}
         open={!!editingUser}
-        onOpenChange={(open) => !open && setEditingUser(null)}
+        onOpenChange={handleEditUserClose}
         onUserUpdate={handleUserUpdate}
         currentUserRole="admin"
       />
@@ -247,7 +277,7 @@ export default function UsersPage() {
         selectedCount={selectedUsers.length}
         processing={bulkProcessing}
         onConfirm={confirmBulkAction}
-        onCancel={() => setBulkActionDialog({ open: false, action: null })}
+        onCancel={handleBulkDialogCancel}
       />
     </div>
   );

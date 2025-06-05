@@ -1,6 +1,6 @@
 import React from 'react';
 import { FeatureCard } from './feature-card';
-import { BookOpen, Lightbulb, Sparkles, Users, Clipboard } from 'lucide-react';
+import { BookOpen, Users, Monitor, ClipboardCheck, Sparkles, PresentationIcon, MessageSquare } from 'lucide-react';
 import { Badge } from '../ui/badge';
 
 const FeaturesSection = () => {
@@ -12,37 +12,38 @@ const FeaturesSection = () => {
               <Sparkles className="mr-1 h-4 w-4" /> Características
             </Badge>
             <h2 className="mb-6 text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
-              Todo lo que necesitas para destacar en la <span className="bg-gradient-to-r from-primary to-indigo-600  bg-clip-text text-transparent">enseñanza híbrida</span>
+              Módulos integrados para la <span className="bg-gradient-to-r from-primary to-indigo-600  bg-clip-text text-transparent">formación docente híbrida</span>
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-              Nuestra plataforma proporciona herramientas completas para apoyar tu jornada docente en entornos educativos que combinan lo mejor de lo presencial y lo virtual.
+              Herramientas especializadas para superar las limitaciones tecnológicas y metodológicas en la educación superior cubana, 
+              facilitando la implementación del Modelo Educativo Híbrido.
             </p>
           </div>
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
              <FeatureCard
               icon={<BookOpen className="h-10 w-10" />}
-              title="Marco Metodológico"
-              description="Un enfoque estructurado para la enseñanza híbrida con estrategias comprobadas y mejores prácticas."
-              color="bg-purple-600" // Color primario violeta
+              title="Gestión de Cursos"
+              description="Sistema completo para crear, organizar y administrar cursos de formación continua en metodología híbrida."
+              color="bg-purple-600"
             />
             <FeatureCard
-              icon={<Clipboard className="h-10 w-10" />}
-              title="Repositorio de Documentos"
-              description="Colección curada de recursos, artículos de investigación y guías prácticas sobre educación híbrida."
-              color="bg-fuchsia-500" // Magenta complementario
+              icon={<Monitor className="h-10 w-10" />}
+              title="Repositorio Digital"
+              description="Biblioteca centralizada de recursos metodológicos, investigaciones y materiales para educación híbrida."
+              color="bg-cyan-500"
+            />
+            <FeatureCard
+              icon={<MessageSquare className="h-10 w-10" />}
+              title="Foros Colaborativos"
+              description="Espacios de intercambio y colaboración entre docentes de UCf, UNISS y UCI para compartir experiencias MEH."
+              color="bg-green-500"
             />
             <FeatureCard
               icon={<Users className="h-10 w-10" />}
-              title="Espacio Colaborativo"
-              description="Conéctate con colegas, comparte experiencias y obtén respuestas a tus desafíos docentes."
-              color="bg-blue-500" // Azul coherente
-            />
-            <FeatureCard
-              icon={<Lightbulb className="h-10 w-10" />}
-              title="Crecimiento Profesional"
-              description="Oportunidades de aprendizaje continuo para mejorar tus habilidades y efectividad docente."
-              color="bg-cyan-500" // Turquesa complementario
+              title="Wikis Educativas"
+              description="Construcción colaborativa de conocimiento sobre metodologías híbridas y mejores prácticas docentes."
+              color="bg-orange-500"
             />
           </div>
         </div>

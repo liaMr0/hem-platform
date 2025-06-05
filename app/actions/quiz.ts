@@ -23,16 +23,17 @@ async function canModifyQuiz(quizSetId: string): Promise<boolean> {
     return true;
   }
 
-  // Instructor solo puede modificar quizzes de sus propios cursos
+  // Instructor solo puede modificar sus propios quizzes
   if (loggedInUser.role === 'instructor') {
-    // Buscar el curso que contiene este quizSet
-    const course = await Course.findOne({ quizSet: quizSetId }).lean();
+    // Buscar el quizSet directamente y verificar su instructor
+    const quizSet = await Quizset.findById(quizSetId).lean();
     
-    if (!course) {
-      throw new Error("Quiz no encontrado o no asociado a ningún curso");
+    if (!quizSet) {
+      throw new Error("Quiz set no encontrado");
     }
     
-    return course.instructor.toString() === loggedInUser.id;
+    // Verificar si el instructor del quizSet es el usuario logueado
+    return quizSet.instructor.toString() === loggedInUser.id;
   }
 
   return false;
@@ -176,7 +177,11 @@ export async function doCreateQuizSet(data){
             throw new Error("No tienes permisos para crear quiz sets");
         }
 
+        // Agregar el instructor ID al crear el quiz set
+        const loggedInUser = await getLoggedInUser();
         data['slug'] = getSlug(data.title);
+        data['instructor'] = loggedInUser.id; // Asegurar que se asigne el instructor
+        
         const createdQuizSet = await Quizset.create(data);
         return createdQuizSet?._id.toString();
     } catch (error) {

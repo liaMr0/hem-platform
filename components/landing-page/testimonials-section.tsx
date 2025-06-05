@@ -36,7 +36,7 @@ const TestimonialsSection = () => {
               accentColor="border-l-accent"
             />
             <TestimonialCard
-              name="David Soto"
+              name="Antonio Soto"
               role="Profesor de Licenciatura en Educación Primaria"
               quote="El repositorio de documentos tiene todo lo que necesito en un solo lugar. No más buscar por todo internet recursos de calidad."
               imageSrc="/placeholder.svg?height=80&width=80"

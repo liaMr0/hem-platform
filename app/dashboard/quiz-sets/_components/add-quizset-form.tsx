@@ -49,7 +49,7 @@ const AddQuizSetForm = () => {
     try {
       const quizSetId = await doCreateQuizSet(values);
       router.push(`/dashboard/quiz-sets/${quizSetId}`);
-      toast.success("Quiz Set Created");
+      toast.success("Conjunto de cuestionarios creado correctamente.");
     } catch (error) {
       toast.error("Algo salió mal.");
     }
@@ -68,11 +68,11 @@ const AddQuizSetForm = () => {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quiz Set Title</FormLabel>
+                  <FormLabel>Conjunto de cuestionarios</FormLabel>
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="e.g 'Reactive Accelerator'"
+                      placeholder="Escriba el título del conjunto de cuestionarios"
                       {...field}
                     />
                   </FormControl>
@@ -88,7 +88,7 @@ const AddQuizSetForm = () => {
                 </Button>
               </Link>
               <Button type="submit" disabled={!isValid || isSubmitting}>
-                Continue
+                Continuar
               </Button>
             </div>
           </form>

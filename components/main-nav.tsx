@@ -14,7 +14,7 @@ import { useSession , signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useUserAvatar } from '@/contexts/UserAvatarContext';
 
-const MainNav = ({items,children}) => {
+const MainNav = ({items,children}:any) => {
     const {data:session, status} = useSession();
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const router = useRouter();
@@ -38,8 +38,6 @@ const MainNav = ({items,children}) => {
         }
         fetchMe();
     },[session]);
-
-
 
     return (
 <>
@@ -97,30 +95,38 @@ const MainNav = ({items,children}) => {
             <div className='cursor-pointer'>
     <Avatar>
     <AvatarImage src={avatarUrl} alt="Avatar del usuario" />
-    <AvatarFallback>CN</AvatarFallback> 
+    <AvatarFallback>
+        {loggedInUser?.name ? loggedInUser.name.charAt(0).toUpperCase() : 'U'}
+    </AvatarFallback> 
     </Avatar>
             </div> 
      </DropdownMenuTrigger>
 
      <DropdownMenuContent align="end" className="w-56 mt-4">
         <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href='/account'>Perfil</Link> 
+            <Link href='/account'>Mi Perfil</Link> 
         </DropdownMenuItem>
 
-        {loggedInUser?.role === "instructor" || loggedInUser?.role === "admin" && (
         <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href='/dashboard'> <strong>Panel de administración</strong> </Link> 
+            <Link href='/courses'>Cursos Disponibles</Link> 
+        </DropdownMenuItem>
+
+        {(loggedInUser?.role === "instructor" || loggedInUser?.role === "admin") && (
+        <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href='/dashboard'> <strong>Panel de Gestión</strong> </Link> 
         </DropdownMenuItem>
         )}
 
-
-
         <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href='/account/enrolled-courses'>Mis cursos</Link> 
+            <Link href='/account/enrolled-courses'>Mis Cursos</Link> 
         </DropdownMenuItem> 
-        {/* <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href=''></Link> 
-        </DropdownMenuItem>  */}
+
+        {loggedInUser?.role === "instructor" && (
+        <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href='/instructor/courses'>Gestionar Cursos</Link> 
+        </DropdownMenuItem>
+        )}
+
         <DropdownMenuItem className="cursor-pointer" asChild>
             <Link href='' onClick={(e) => {e.preventDefault(); signOut(); }} >Cerrar Sesión</Link> 
         </DropdownMenuItem> 
@@ -129,19 +135,13 @@ const MainNav = ({items,children}) => {
     </DropdownMenu>
     )}
     
-
-
-
     <button className='flex items-center space-x-2 lg:hidden' onClick={() => setShowMobileMenu(!showMobileMenu)}>
         {showMobileMenu ? <X/> : <Menu/> } 
     </button>
 
-
-    
     </nav> 
 
 </>
-
 
     );
 };

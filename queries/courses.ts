@@ -10,25 +10,6 @@ import { Lesson } from "@/model/lesson.model";
 import mongoose from "mongoose";
 import { Enrollment } from "@/model/enrollment-model";
 
-export async function getCourseList() {
-    const courses = await Course.find({active:true})
-        .select(["title","subtitle","thumbnail","modules","category","instructor"])
-        .populate({
-            path: "instructor",
-            model: User,
-            select: "_id firstName lastName designation profilePicture"
-        })
-        .populate({
-            path: "testimonials",
-            model: Testimonial
-        })
-        .populate({
-            path: "modules",
-            model: Module
-        })
-        .lean();
-    return replaceMongoIdInArray(courses);
-}
 
 // Nueva función para obtener cursos del dashboard basado en rol
 export async function getDashboardCourses(instructorId?: string) {
@@ -140,7 +121,7 @@ export async function getCourseDetails(courseId: string) {
     }
 }
 
-function groupBy(array: any[], keyFn: (item: any) => string) {
+export function groupBy(array: any[], keyFn: (item: any) => string) {
     return array.reduce((acc, item) => {
         const key = keyFn(item);
         if (!acc[key]) {
@@ -232,5 +213,195 @@ export async function getRelatedCourses(currentCourseId: string, categoryId: str
     } catch (error) {
         console.error("Error getting related courses:", error);
         return [];
+    }
+}
+
+export async function getCourseList() {
+    try {
+        const courses = await Course.find({ active: true })
+            .select([
+                "title",
+                "subtitle", 
+                "description",
+                "thumbnail",
+                "modules",
+                "instructor",
+                "createdOn"
+            ])
+            .populate({
+                path: "instructor",
+                model: User,
+                select: "_id firstName lastName designation profilePicture"
+            })
+            .populate({
+                path: "testimonials",
+                model: Testimonial,
+                select: "rating comment user",
+                populate: {
+                    path: "user",
+                    model: User,
+                    select: "firstName lastName"
+                }
+            })
+            .populate({
+                path: "modules",
+                model: Module,
+                select: "title lessonIds",
+                populate: {
+                    path: "lessonIds",
+                    model: Lesson,
+                    select: "title duration"
+                }
+            })
+            .sort({ createdOn: -1 })
+            .lean();
+        
+        return replaceMongoIdInArray(courses);
+    } catch (error) {
+        console.error('Error in getCourseList:', error);
+        throw new Error(`Failed to get course list: ${error.message}`);
+    }
+}
+
+
+// Función para buscar cursos con filtros avanzados
+export async function searchCourses(searchParams: {
+    search?: string;
+    instructor?: string;
+    sortBy?: 'newest' | 'oldest' | 'title';
+}) {
+    try {
+        let query: any = { active: true };
+        
+        // Filtro de búsqueda por texto
+        if (searchParams.search) {
+            query.$or = [
+                { title: { $regex: searchParams.search, $options: 'i' } },
+                { subtitle: { $regex: searchParams.search, $options: 'i' } },
+                { description: { $regex: searchParams.search, $options: 'i' } }
+            ];
+        }
+        
+        // Filtro por instructor
+        if (searchParams.instructor) {
+            if (mongoose.Types.ObjectId.isValid(searchParams.instructor)) {
+                query.instructor = searchParams.instructor;
+            }
+        }
+        
+        // Configurar ordenamiento
+        let sortOption: any = { createdOn: -1 }; // Por defecto más nuevos
+        
+        switch (searchParams.sortBy) {
+            case 'oldest':
+                sortOption = { createdOn: 1 };
+                break;
+            case 'title':
+                sortOption = { title: 1 };
+                break;
+            case 'newest':
+            default:
+                sortOption = { createdOn: -1 };
+                break;
+        }
+        
+        const courses = await Course.find(query)
+            .select([
+                "title",
+                "subtitle",
+                "description",
+                "thumbnail", 
+                "modules",
+                "instructor",
+                "createdOn"
+            ])
+            .populate({
+                path: "instructor",
+                model: User,
+                select: "_id firstName lastName designation profilePicture"
+            })
+            .populate({
+                path: "testimonials",
+                model: Testimonial,
+                select: "rating comment user",
+                populate: {
+                    path: "user",
+                    model: User,
+                    select: "firstName lastName"
+                }
+            })
+            .populate({
+                path: "modules",
+                model: Module,
+                select: "title lessonIds",
+                populate: {
+                    path: "lessonIds",
+                    model: Lesson,
+                    select: "title duration"
+                }
+            })
+            .sort(sortOption)
+            .lean();
+            
+        return replaceMongoIdInArray(courses);
+    } catch (error) {
+        console.error('Error in searchCourses:', error);
+        throw new Error(`Failed to search courses: ${error.message}`);
+    }
+}
+
+
+// Función para obtener estadísticas de progreso de un curso
+export async function getCourseProgressStats(courseId: string, studentId: string) {
+    try {
+        if (!mongoose.Types.ObjectId.isValid(courseId) || !mongoose.Types.ObjectId.isValid(studentId)) {
+            throw new Error('Invalid course or student ID');
+        }
+
+        const course = await getCourseDetails(courseId);
+        if (!course) {
+            return null;
+        }
+
+        // Obtener reporte del estudiante
+        const { getReport } = await import('./reports');
+        const report = await getReport({ course: courseId, student: studentId });
+        
+        if (!report) {
+            return {
+                totalModules: course.modules?.length || 0,
+                completedModules: 0,
+                totalLessons: 0,
+                completedLessons: 0,
+                progress: 0,
+                isCompleted: false,
+                completionDate: null
+            };
+        }
+
+        const totalModules = course.modules?.length || 0;
+        const completedModules = report.totalCompletedModeules?.length || 0;
+        
+        // Calcular total de lecciones
+        const totalLessons = course.modules?.reduce((acc, module) => {
+            return acc + (module.lessonIds?.length || 0);
+        }, 0) || 0;
+        
+        const completedLessons = report.totalCompletedLessons?.length || 0;
+        const progress = totalModules > 0 ? (completedModules / totalModules) * 100 : 0;
+        
+        return {
+            totalModules,
+            completedModules,
+            totalLessons,
+            completedLessons,
+            progress: Math.round(progress),
+            isCompleted: progress === 100 || !!report.completion_date,
+            completionDate: report.completion_date
+        };
+        
+    } catch (error) {
+        console.error('Error getting course progress stats:', error);
+        return null;
     }
 }

@@ -26,7 +26,7 @@ export function usePermissions({
     }
 
     if (status === 'unauthenticated') {
-      router.push('/auth/signin');
+      router.push('/login');
       setIsLoading(false);
       return;
     }

@@ -1,5 +1,4 @@
-
-// _components/CourseModuleList.tsx (Corregido)
+// _components/CourseModuleList.tsx (Mejorado)
 import React from 'react';
 import {
   Accordion,
@@ -7,7 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Video, FileQuestion, Radio, Clock, BookOpen } from "lucide-react";
+import { Video, FileText, Clock, BookOpen, Play } from "lucide-react";
 import CourseLessonList from './CourseLessonList';
 
 interface CourseModuleListProps {
@@ -16,10 +15,9 @@ interface CourseModuleListProps {
   isEnrolled?: boolean;
 }
 
-const CourseModuleList = ({ module, moduleIndex, isEnrolled = false }: CourseModuleListProps) => {
-  // Calcular duración total del módulo
+const CourseModuleList = ({ module, moduleIndex, isEnrolled = true }: CourseModuleListProps) => {
+  // Calcular duración total del módulo basado en datos reales
   const totalDuration = module?.lessonIds?.reduce((acc: number, lessonData: any) => {
-    // Manejar tanto objetos como IDs
     const duration = typeof lessonData === 'object' ? lessonData.duration : 0;
     return acc + (duration || 0);
   }, 0) || 0;
@@ -36,8 +34,14 @@ const CourseModuleList = ({ module, moduleIndex, isEnrolled = false }: CourseMod
 
   const lessonCount = module?.lessonIds?.length || 0;
 
+  // Contar tipos de contenido disponible
+  const hasVideoContent = module?.lessonIds?.some((lessonData: any) => {
+    const lesson = typeof lessonData === 'object' ? lessonData : null;
+    return lesson?.duration && lesson.duration > 0;
+  });
+
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
+    <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
       <AccordionItem className="border-none" value={`module-${moduleIndex}`}>
         <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline">
           <div className="flex items-center justify-between w-full">
@@ -55,12 +59,14 @@ const CourseModuleList = ({ module, moduleIndex, isEnrolled = false }: CourseMod
         </AccordionTrigger>
         
         <AccordionContent className="px-6 pb-4">
-          {/* Estadísticas del módulo */}
+          {/* Estadísticas del módulo - Solo datos reales */}
           <div className="flex flex-wrap gap-4 mb-4 text-sm text-gray-600 bg-gray-50 p-4 rounded-lg">
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4" />
-              <span>{lessonCount} lección{lessonCount !== 1 ? 'es' : ''}</span>
-            </div>
+            {lessonCount > 0 && (
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4" />
+                <span>{lessonCount} lección{lessonCount !== 1 ? 'es' : ''}</span>
+              </div>
+            )}
             
             {totalDuration > 0 && (
               <div className="flex items-center gap-2">
@@ -69,14 +75,16 @@ const CourseModuleList = ({ module, moduleIndex, isEnrolled = false }: CourseMod
               </div>
             )}
             
-            <div className="flex items-center gap-2">
-              <Video className="w-4 h-4" />
-              <span>Contenido en video</span>
-            </div>
+            {hasVideoContent && (
+              <div className="flex items-center gap-2">
+                <Video className="w-4 h-4" />
+                <span>Contenido en video</span>
+              </div>
+            )}
             
             <div className="flex items-center gap-2">
-              <FileQuestion className="w-4 h-4" />
-              <span>Ejercicios incluidos</span>
+              <Play className="w-4 h-4 text-green-600" />
+              <span className="text-green-600 font-medium">Acceso completo</span>
             </div>
           </div>
 

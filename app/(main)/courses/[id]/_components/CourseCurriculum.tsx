@@ -1,19 +1,18 @@
-
-// _components/CourseCurriculum.tsx (Actualizado)
+// _components/CourseCurriculum.tsx (Mejorado)
 import React from 'react';
 import { Accordion } from "@/components/ui/accordion";
+import { BookOpen, Clock, Play, FileText } from 'lucide-react';
 import CourseModuleList from './module/CourseModuleList';
-import { BookOpen, Clock, Play } from 'lucide-react';
 
 interface CourseCurriculumProps {
   course: any;
   isEnrolled?: boolean;
 }
 
-const CourseCurriculum = ({ course, isEnrolled = false }: CourseCurriculumProps) => {
+const CourseCurriculum = ({ course, isEnrolled = true }: CourseCurriculumProps) => {
   const modules = course?.modules || [];
-  
-  // Calcular estadísticas totales
+    
+  // Calcular estadísticas totales basadas en datos reales
   const totalLessons = modules.reduce((acc: number, module: any) => {
     return acc + (module?.lessonIds?.length || 0);
   }, 0);
@@ -29,8 +28,15 @@ const CourseCurriculum = ({ course, isEnrolled = false }: CourseCurriculumProps)
   const formatTotalDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    return `${hours}h ${minutes}m`;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
   };
+
+  // Calcular documentos disponibles
+  const totalDocuments = course?.documents?.length || 0;
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-8">
@@ -40,25 +46,71 @@ const CourseCurriculum = ({ course, isEnrolled = false }: CourseCurriculumProps)
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             Contenido del Curso
           </h2>
-          
-          {/* Estadísticas del curso */}
+                    
+          {/* Estadísticas del curso - Solo datos reales */}
           <div className="flex flex-wrap gap-6 text-sm text-gray-600">
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4" />
-              <span>{modules.length} módulo{modules.length !== 1 ? 's' : ''}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Play className="w-4 h-4" />
-              <span>{totalLessons} lección{totalLessons !== 1 ? 'es' : ''}</span>
-            </div>
+            {modules.length > 0 && (
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4" />
+                <span>{modules.length} módulo{modules.length !== 1 ? 's' : ''}</span>
+              </div>
+            )}
+            
+            {totalLessons > 0 && (
+              <div className="flex items-center gap-2">
+                <Play className="w-4 h-4" />
+                <span>{totalLessons} lección{totalLessons !== 1 ? 'es' : ''}</span>
+              </div>
+            )}
+            
             {totalDuration > 0 && (
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 <span>{formatTotalDuration(totalDuration)} de contenido</span>
               </div>
             )}
+
+            {totalDocuments > 0 && (
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                <span>{totalDocuments} documento{totalDocuments !== 1 ? 's' : ''}</span>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Documentos del curso */}
+        {course?.documents && course.documents.length > 0 && (
+          <div className="bg-blue-50 rounded-lg p-6">
+            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-600" />
+              Documentos del Curso
+            </h3>
+            <div className="grid gap-3">
+              {course.documents.map((doc: any, index: number) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-4 h-4 text-blue-600" />
+                    <div>
+                      <p className="font-medium text-sm text-gray-900">{doc.fileName}</p>
+                      <p className="text-xs text-gray-500">
+                        {doc.fileType.toUpperCase()} • {(doc.fileSize / 1024 / 1024).toFixed(1)} MB
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={doc.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    Descargar
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Módulos */}
         {modules.length > 0 ? (
@@ -79,8 +131,7 @@ const CourseCurriculum = ({ course, isEnrolled = false }: CourseCurriculumProps)
             <p>El contenido de este curso se está preparando. ¡Vuelve pronto!</p>
           </div>
         )}
-
-       
+              
       </div>
     </div>
   );

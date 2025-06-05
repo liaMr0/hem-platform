@@ -50,61 +50,6 @@ export async function getEnrollmentsByCourse(courseId: string) {
     }
 }
 
-export async function getEnrollmentsForCourse(courseId: string) {
-    try {
-        validateObjectId(courseId, 'Course ID');
-        
-        const enrollments = await Enrollment.find({course: courseId}).lean();
-        return replaceMongoIdInArray(enrollments);
-    } catch (error) {
-        console.error('Error in getEnrollmentsForCourse:', error);
-        throw new Error(`Failed to get enrollments for course: ${error.message}`);
-    }
-}
-
-export async function getEnrollmentsForUser(userId: string) {
-    try {
-        validateObjectId(userId, 'User ID');
-
-        const enrollments = await Enrollment.find({ student: userId})
-            .populate({
-                path: "course",
-                model: Course,
-                select: "_id title thumbnail category modules active" // Solo campos necesarios
-            })
-            .populate({
-                path: "student",
-                model: User,
-                select: "_id firstName lastName email" // Incluir campos del estudiante
-            })
-            .lean();
-        
-        // Filtrar enrollments con cursos válidos
-        const validEnrollments = enrollments.filter(enrollment => {
-            const hasCourse = enrollment.course && 
-                             enrollment.course._id && 
-                             enrollment.course.title;
-            const hasStudent = enrollment.student && enrollment.student._id;
-            const isActive = enrollment.course?.active !== false;
-            
-            if (!hasCourse) {
-                console.warn('Enrollment missing course data:', enrollment._id);
-            }
-            if (!hasStudent) {
-                console.warn('Enrollment missing student data:', enrollment._id);
-            }
-            
-            return hasCourse && hasStudent && isActive;
-        });
-        
-        console.log(`Found ${validEnrollments.length} valid enrollments out of ${enrollments.length} total`);
-        
-        return replaceMongoIdInArray(validEnrollments);
-    } catch (err) {
-        console.error('Error fetching user enrollments:', err);
-        throw new Error(`Failed to fetch enrollments: ${err.message}`);
-    }
-}
 
 export async function hasEnrollmentForCourse(courseId: string, studentId: string): Promise<boolean> {
     try {
@@ -315,34 +260,34 @@ export async function getCourseEnrollments(courseId: string) {
 }
 
 // Función adicional para pausar/reanudar enrollment
-export async function updateEnrollmentStatus(courseId: string, userId: string, status: 'not-started' | 'in-progress' | 'completed' | 'paused') {
-    try {
-        validateObjectId(courseId, 'Course ID');
-        validateObjectId(userId, 'User ID');
+// export async function updateEnrollmentStatus(courseId: string, userId: string, status: 'not-started' | 'in-progress' | 'completed' | 'paused') {
+//     try {
+//         validateObjectId(courseId, 'Course ID');
+//         validateObjectId(userId, 'User ID');
         
-        const updateData: any = {
-            status: status,
-            last_accessed: new Date()
-        };
+//         const updateData: any = {
+//             status: status,
+//             last_accessed: new Date()
+//         };
 
-        // Si se completa, agregar fecha de completación
-        if (status === 'completed') {
-            updateData.completion_date = new Date();
-            updateData.progress = 100;
-        }
+//         // Si se completa, agregar fecha de completación
+//         if (status === 'completed') {
+//             updateData.completion_date = new Date();
+//             updateData.progress = 100;
+//         }
 
-        const enrollment = await Enrollment.findOneAndUpdate(
-            { course: courseId, student: userId },
-            updateData,
-            { new: true, runValidators: true }
-        ).lean();
+//         const enrollment = await Enrollment.findOneAndUpdate(
+//             { course: courseId, student: userId },
+//             updateData,
+//             { new: true, runValidators: true }
+//         ).lean();
 
-        return enrollment ? replaceMongoIdInObject(enrollment) : null;
-    } catch (error) {
-        console.error('Error updating enrollment status:', error);
-        throw new Error(`Failed to update enrollment status: ${error.message}`);
-    }
-}
+//         return enrollment ? replaceMongoIdInObject(enrollment) : null;
+//     } catch (error) {
+//         console.error('Error updating enrollment status:', error);
+//         throw new Error(`Failed to update enrollment status: ${error.message}`);
+//     }
+// }
 
 // Función para obtener estadísticas de enrollment
 export async function getEnrollmentStats(courseId: string) {
@@ -375,5 +320,331 @@ export async function getEnrollmentStats(courseId: string) {
     } catch (error) {
         console.error('Error getting enrollment stats:', error);
         return { total: 0, byStatus: {} };
+    }
+}
+
+export async function getEnrollmentsForUser(userId: string) {
+    try {
+        if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+            console.error('Invalid user ID:', userId);
+            return [];
+        }
+
+        const enrollments = await Enrollment.find({ 
+            student: userId 
+        })
+        .populate({
+            path: 'course',
+            model: Course,
+            select: 'title subtitle thumbnail instructor modules active',
+            populate: {
+                path: 'instructor',
+                model: User,
+                select: 'firstName lastName'
+            }
+        })
+        .populate({
+            path: 'student',
+            model: User,
+            select: 'firstName lastName email'
+        })
+        .sort({ enrollment_date: -1 })
+        .lean();
+
+        return replaceMongoIdInArray(enrollments);
+    } catch (error) {
+        console.error('Error in getEnrollmentsForUser:', error);
+        return [];
+    }
+}
+
+// Obtener todos los enrollments de un curso específico
+export async function getEnrollmentsForCourse(courseId: string) {
+    try {
+        if (!courseId || !mongoose.Types.ObjectId.isValid(courseId)) {
+            console.error('Invalid course ID:', courseId);
+            return [];
+        }
+
+        const enrollments = await Enrollment.find({ 
+            course: courseId 
+        })
+        .populate({
+            path: 'student',
+            model: User,
+            select: 'firstName lastName email profilePicture'
+        })
+        .populate({
+            path: 'course',
+            model: Course,
+            select: 'title'
+        })
+        .sort({ enrollment_date: -1 })
+        .lean();
+
+        return replaceMongoIdInArray(enrollments);
+    } catch (error) {
+        console.error('Error in getEnrollmentsForCourse:', error);
+        return [];
+    }
+}
+
+// Verificar si un usuario está inscrito en un curso específico
+export async function isUserEnrolledInCourse(userId: string, courseId: string) {
+    try {
+        if (!userId || !courseId || 
+            !mongoose.Types.ObjectId.isValid(userId) || 
+            !mongoose.Types.ObjectId.isValid(courseId)) {
+            return false;
+        }
+
+        const enrollment = await Enrollment.findOne({
+            student: userId,
+            course: courseId
+        }).lean();
+
+        return !!enrollment;
+    } catch (error) {
+        console.error('Error checking enrollment:', error);
+        return false;
+    }
+}
+
+// Crear un nuevo enrollment
+export async function createEnrollment(studentId: string, courseId: string) {
+    try {
+        if (!studentId || !courseId || 
+            !mongoose.Types.ObjectId.isValid(studentId) || 
+            !mongoose.Types.ObjectId.isValid(courseId)) {
+            throw new Error('Invalid student or course ID');
+        }
+
+        // Verificar si ya está inscrito
+        const existingEnrollment = await isUserEnrolledInCourse(studentId, courseId);
+        if (existingEnrollment) {
+            throw new Error('User is already enrolled in this course');
+        }
+
+        // Verificar que el curso existe y está activo
+        const course = await Course.findById(courseId).lean();
+        if (!course) {
+            throw new Error('Course not found');
+        }
+        if (!course.active) {
+            throw new Error('Course is not active');
+        }
+
+        const newEnrollment = await Enrollment.create({
+            student: studentId,
+            course: courseId,
+            enrollment_date: new Date(),
+            status: 'active'
+        });
+
+        return replaceMongoIdInObject(newEnrollment.toObject());
+    } catch (error) {
+        console.error('Error creating enrollment:', error);
+        throw error;
+    }
+}
+
+// Obtener estadísticas de enrollments por instructor
+export async function getEnrollmentStatsByInstructor(instructorId: string) {
+    try {
+        if (!instructorId || !mongoose.Types.ObjectId.isValid(instructorId)) {
+            return {
+                totalEnrollments: 0,
+                activeEnrollments: 0,
+                completedEnrollments: 0,
+                courseEnrollments: []
+            };
+        }
+
+        // Obtener cursos del instructor
+        const instructorCourses = await Course.find({ 
+            instructor: instructorId,
+            active: true 
+        }).select('_id title').lean();
+
+        const courseIds = instructorCourses.map(course => course._id);
+
+        if (courseIds.length === 0) {
+            return {
+                totalEnrollments: 0,
+                activeEnrollments: 0,
+                completedEnrollments: 0,
+                courseEnrollments: []
+            };
+        }
+
+        // Obtener todos los enrollments de estos cursos
+        const enrollments = await Enrollment.find({
+            course: { $in: courseIds }
+        })
+        .populate({
+            path: 'course',
+            model: Course,
+            select: 'title'
+        })
+        .populate({
+            path: 'student',
+            model: User,
+            select: 'firstName lastName'
+        })
+        .lean();
+
+        // Calcular estadísticas
+        const totalEnrollments = enrollments.length;
+        const activeEnrollments = enrollments.filter(e => e.status === 'active').length;
+        const completedEnrollments = enrollments.filter(e => e.completion_date).length;
+
+        // Agrupar por curso
+        const courseEnrollmentMap = enrollments.reduce((acc, enrollment) => {
+            const courseId = enrollment.course._id.toString();
+            const courseTitle = enrollment.course.title;
+            
+            if (!acc[courseId]) {
+                acc[courseId] = {
+                    courseId,
+                    courseTitle,
+                    enrollments: []
+                };
+            }
+            
+            acc[courseId].enrollments.push(enrollment);
+            return acc;
+        }, {} as Record<string, any>);
+
+        const courseEnrollments = Object.values(courseEnrollmentMap);
+
+        return {
+            totalEnrollments,
+            activeEnrollments,
+            completedEnrollments,
+            courseEnrollments: replaceMongoIdInArray(courseEnrollments)
+        };
+    } catch (error) {
+        console.error('Error in getEnrollmentStatsByInstructor:', error);
+        return {
+            totalEnrollments: 0,
+            activeEnrollments: 0,
+            completedEnrollments: 0,
+            courseEnrollments: []
+        };
+    }
+}
+
+// Actualizar estado de enrollment
+export async function updateEnrollmentStatus(enrollmentId: string, status: string, completionDate?: Date) {
+    try {
+        if (!enrollmentId || !mongoose.Types.ObjectId.isValid(enrollmentId)) {
+            throw new Error('Invalid enrollment ID');
+        }
+
+        const updateData: any = { status };
+        if (completionDate) {
+            updateData.completion_date = completionDate;
+        }
+
+        const updatedEnrollment = await Enrollment.findByIdAndUpdate(
+            enrollmentId,
+            updateData,
+            { new: true }
+        ).lean();
+
+        return replaceMongoIdInObject(updatedEnrollment);
+    } catch (error) {
+        console.error('Error updating enrollment status:', error);
+        throw error;
+    }
+}
+
+// Obtener enrollments con paginación
+export async function getEnrollmentsWithPagination(
+    page = 1, 
+    limit = 10, 
+    filters: {
+        studentId?: string;
+        courseId?: string;
+        instructorId?: string;
+        status?: string;
+    } = {}
+) {
+    try {
+        const skip = (page - 1) * limit;
+        let query: any = {};
+
+        // Aplicar filtros
+        if (filters.studentId && mongoose.Types.ObjectId.isValid(filters.studentId)) {
+            query.student = filters.studentId;
+        }
+        
+        if (filters.courseId && mongoose.Types.ObjectId.isValid(filters.courseId)) {
+            query.course = filters.courseId;
+        }
+        
+        if (filters.status) {
+            query.status = filters.status;
+        }
+
+        // Si se filtra por instructor, primero obtener sus cursos
+        if (filters.instructorId && mongoose.Types.ObjectId.isValid(filters.instructorId)) {
+            const instructorCourses = await Course.find({ 
+                instructor: filters.instructorId 
+            }).select('_id').lean();
+            
+            const courseIds = instructorCourses.map(course => course._id);
+            query.course = { $in: courseIds };
+        }
+
+        const [enrollments, total] = await Promise.all([
+            Enrollment.find(query)
+                .populate({
+                    path: 'student',
+                    model: User,
+                    select: 'firstName lastName email'
+                })
+                .populate({
+                    path: 'course',
+                    model: Course,
+                    select: 'title instructor',
+                    populate: {
+                        path: 'instructor',
+                        model: User,
+                        select: 'firstName lastName'
+                    }
+                })
+                .sort({ enrollment_date: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            
+            Enrollment.countDocuments(query)
+        ]);
+
+        return {
+            enrollments: replaceMongoIdInArray(enrollments),
+            pagination: {
+                page,
+                limit,
+                total,
+                pages: Math.ceil(total / limit),
+                hasNext: page < Math.ceil(total / limit),
+                hasPrev: page > 1
+            }
+        };
+    } catch (error) {
+        console.error('Error in getEnrollmentsWithPagination:', error);
+        return {
+            enrollments: [],
+            pagination: {
+                page: 1,
+                limit,
+                total: 0,
+                pages: 0,
+                hasNext: false,
+                hasPrev: false
+            }
+        };
     }
 }

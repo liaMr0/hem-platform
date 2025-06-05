@@ -1,16 +1,15 @@
 import Image from 'next/image';
 import React from 'react';
-import logo from "@/public/assets/images/university.png"
+import logo from "@/public/assets/images/forward.png"
 import { cn } from '@/lib/utils';
 import { Brain} from 'lucide-react';
 import Link from 'next/link';
 
 const Logo = () => {
     return (
-        <div>
-            <Link href="/" className="flex items-center space-x-2">
-                <Brain className="h-6 w-6 text-primary" />
-                <span className="inline-block font-bold">MEH</span>
+        <div className='ml-2'>
+            <Link href="/" >
+                <Image src={logo} color='blue' alt="logo" width={40} height={40} />
             </Link>
 
         </div>

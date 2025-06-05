@@ -24,6 +24,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { FiltersSectionProps } from "../_types/component-props";
+import { useDebouncedCallback } from 'use-debounce';
 
 export function FiltersSection({ 
   filters, 
@@ -51,7 +52,7 @@ export function FiltersSection({
       <CardContent>
         <div className="space-y-4">
           {/* Filtros básicos */}
-          <div className="flex flex-col gap-4 md:flex-row md:items-end">
+          <div className="flex flex-col gap-4 sm:flex-row">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -64,7 +65,7 @@ export function FiltersSection({
               </div>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Select 
                 value={filters.roleFilter} 
                 onValueChange={(value) => onUpdateFilter('roleFilter', value)}

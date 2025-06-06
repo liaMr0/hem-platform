@@ -8,11 +8,57 @@ import { Circle } from "lucide-react";
 import { getQuizSetById } from "@/queries/quizzes";
 import { QuizCardActions } from "./_components/quiz-card-action";
 
-const EditQuizSet = async ({ params }: any) => {
-  const { quizSetId } = await params;
-  
+// ✅ CORRECCIÓN: Tipar correctamente los parámetros
+interface EditQuizSetProps {
+  params: Promise<{ quizSetId: string }>;
+}
+
+const EditQuizSet = async ({ params }: EditQuizSetProps) => {
   try {
-    const quizSet = await getQuizSetById(quizSetId);
+    // ✅ CORRECCIÓN: Await params y validar
+    console.log('Raw params before await:', params);
+    const resolvedParams = await params;
+    console.log('Resolved params:', resolvedParams);
+    console.log('Type of resolvedParams:', typeof resolvedParams);
+    
+    // ✅ Extraer quizSetId con validación adicional
+    let quizSetId: string;
+    
+    if (typeof resolvedParams === 'object' && resolvedParams !== null) {
+      quizSetId = resolvedParams.quizSetId;
+    } else {
+      console.error('Resolved params is not an object:', resolvedParams);
+      return (
+        <div className="p-6">
+          <AlertBanner
+            label="Error en los parámetros de la URL."
+            variant="destructive"
+          />
+        </div>
+      );
+    }
+    
+    console.log('Extracted quizSetId:', quizSetId);
+    console.log('Type of quizSetId:', typeof quizSetId);
+    
+    // ✅ Validar que quizSetId es una string válida
+    if (!quizSetId || typeof quizSetId !== 'string' || quizSetId.trim() === '') {
+      console.error('Invalid quizSetId:', quizSetId, 'Type:', typeof quizSetId);
+      return (
+        <div className="p-6">
+          <AlertBanner
+            label="ID de cuestionario inválido."
+            variant="destructive"
+          />
+        </div>
+      );
+    }
+
+    // ✅ Limpiar el ID por si tiene codificación URL
+    const cleanQuizSetId = decodeURIComponent(quizSetId.trim());
+    console.log('Clean quizSetId:', cleanQuizSetId);
+    
+    const quizSet = await getQuizSetById(cleanQuizSetId);
     
     // Verificar que el quizSet existe
     if (!quizSet) {
@@ -66,7 +112,7 @@ const EditQuizSet = async ({ params }: any) => {
         <div className="p-6">
           <div className="flex items-center justify-end">
             <QuizSetAction 
-              quizSetId={quizSetId} 
+              quizSetId={cleanQuizSetId} 
               quiz={quizSet?.active} 
               quizId={quizSet?.id} 
             />
@@ -112,7 +158,7 @@ const EditQuizSet = async ({ params }: any) => {
                     </div>
                     
                     <div className="flex items-center justify-end gap-2 mt-6">
-                      <QuizCardActions quiz={quiz} quizSetId={quizSetId} />
+                      <QuizCardActions quiz={quiz} quizSetId={cleanQuizSetId} />
                     </div>
                   </div>
                 ))}
@@ -128,12 +174,12 @@ const EditQuizSet = async ({ params }: any) => {
               <div className="max-w-[800px]">
                 <TitleForm
                   initialData={{ title: quizSet.title }}
-                  quizSetId={quizSetId}
+                  quizSetId={cleanQuizSetId}
                 />
               </div>
 
               <div className="max-w-[800px]">
-                <AddQuizForm quizSetId={quizSetId} />
+                <AddQuizForm quizSetId={cleanQuizSetId} />
               </div>
             </div>
           </div>
@@ -141,12 +187,13 @@ const EditQuizSet = async ({ params }: any) => {
       </>
     );
   } catch (error) {
-    console.error("Error loading quiz set:", error);
+    console.error("Error en EditQuizSet:", error);
+    console.error("Error stack:", error.stack);
     
     return (
       <div className="p-6">
         <AlertBanner
-          label={`Error al cargar el conjunto de preguntas: ${error.message}`}
+          label={`Error al cargar el conjunto de preguntas: ${error instanceof Error ? error.message : 'Error desconocido'}`}
           variant="destructive"
         />
       </div>

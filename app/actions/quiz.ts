@@ -2,12 +2,14 @@
 "use server"
 import { Quizset } from "@/model/quizset-model";
 import { getSlug, replaceMongoIdInArray } from '../../lib/convertData';
-import { createQuiz, getQuizSetById } from "@/queries/quizzes";
+import { createQuiz, createQuizSet, getQuizSetById } from "@/queries/quizzes";
 import { Quiz } from "@/model/quizzes-model";
 import mongoose from "mongoose";
 import { Assessment } from "@/model/assessment-model";
 import { getLoggedInUser } from "@/lib/loggedin-user";
 import { createAssessmentReport } from "@/queries/reports";
+import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
 
 // Helper function to check if user can modify quiz
 async function canModifyQuiz(quizSetId: string): Promise<boolean> {
@@ -190,32 +192,44 @@ export async function changeQuizPublishState(quizSetId: string) {
     }
 }
 
-export async function doCreateQuizSet(data: any) {
-    try {
-        const canCreate = await canCreateQuizSet();
-        
-        if (!canCreate) {
-            throw new Error("No tienes permisos para crear quiz sets");
-        }
-
-        // Agregar el instructor ID al crear el quiz set
-        const loggedInUser = await getLoggedInUser();
-        if (!loggedInUser) {
-            throw new Error("Usuario no autenticado");
-        }
-        
-        const quizSetData = {
-            ...data,
-            slug: getSlug(data.title),
-            instructor: loggedInUser.id
-        };
-        
-        const createdQuizSet = await Quizset.create(quizSetData);
-        return { success: true, quizSetId: createdQuizSet._id.toString() };
-    } catch (error) {
-        console.error("Error creating quiz set:", error);
-        throw new Error(error instanceof Error ? error.message : "Error al crear el quiz set");
+export async function doCreateQuizSet(values: { title: string }) {
+  try {
+    // Verificar autenticación
+    const session = await auth();
+    
+    if (!session?.user) {
+      throw new Error('No autorizado');
     }
+
+    // Verificar que el usuario tenga permisos
+    if (session.user.role !== 'admin' && session.user.role !== 'instructor') {
+      throw new Error('Sin permisos para crear cuestionarios');
+    }
+
+    console.log('Creating quiz set for user:', session.user.id, 'with title:', values.title);
+
+    // Preparar datos para crear el quiz set
+    const quizSetData = {
+      title: values.title,
+      description: '',
+      active: false,
+      instructor: session.user.id,
+      quizIds: []
+    };
+
+    // Crear el quiz set
+    const quizSetId = await createQuizSet(quizSetData);
+    
+    console.log('Quiz set created with ID:', quizSetId);
+    
+    // Revalidar la página de quiz sets
+    revalidatePath('/dashboard/quiz-sets');
+    
+    return quizSetId;
+  } catch (error) {
+    console.error('Error in doCreateQuizSet:', error);
+    throw new Error(error instanceof Error ? error.message : 'Error al crear el cuestionario');
+  }
 }
 
 // FUNCIÓN MEJORADA: Procesar respuestas del quiz

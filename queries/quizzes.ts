@@ -43,13 +43,44 @@ export async function getQuizSetsByInstructor(instructorId: string, excludeUnPub
 
 export async function getQuizSetById(id: string) {
   try {
-    // Validar que id sea un ObjectId válido
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      console.error('Invalid ObjectId:', id);
+    console.log('getQuizSetById called with:', id, 'Type:', typeof id);
+    
+    // ✅ MEJORA: Validación más robusta
+    if (!id) {
+      console.error('Quiz set ID is falsy:', id);
       return null;
     }
 
-    const quizSet = await Quizset.findById(id)
+    if (typeof id !== 'string') {
+      console.error('Quiz set ID is not a string:', id, 'Type:', typeof id);
+      return null;
+    }
+
+    const trimmedId = id.trim();
+    if (trimmedId === '') {
+      console.error('Quiz set ID is empty after trim');
+      return null;
+    }
+
+    // ✅ Limpiar el ID de posibles caracteres de codificación URL
+    let cleanId: string;
+    try {
+      cleanId = decodeURIComponent(trimmedId);
+      console.log('Decoded ID:', cleanId);
+    } catch (decodeError) {
+      console.error('Error decoding URI component:', decodeError);
+      cleanId = trimmedId;
+    }
+    
+    // Validar que id sea un ObjectId válido
+    if (!mongoose.Types.ObjectId.isValid(cleanId)) {
+      console.error('Invalid ObjectId:', cleanId, 'Original:', id);
+      return null;
+    }
+
+    console.log('Attempting to find quiz set with ID:', cleanId);
+
+    const quizSet = await Quizset.findById(cleanId)
       .populate({
         path: "quizIds",
         model: Quiz,
@@ -57,17 +88,18 @@ export async function getQuizSetById(id: string) {
       .lean();
 
     if (!quizSet) {
-      console.error('Quiz set not found:', id);
+      console.error('Quiz set not found in database:', cleanId);
       return null;
     }
 
+    console.log('Quiz set found successfully');
     return replaceMongoIdInObject(quizSet);
   } catch (error) {
     console.error('Error in getQuizSetById:', error);
+    console.error('Error stack:', error.stack);
     throw new Error(`Failed to get quiz set: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
-
 // ✅ NUEVA FUNCIÓN: Obtener quiz set con todos los detalles para un curso
 export async function getQuizSetForCourse(quizSetId: string) {
   try {
@@ -180,8 +212,35 @@ export async function createQuiz(quizData: any) {
 
 export async function createQuizSet(quizSetData: any) {
   try {
-    const quizSet = await Quizset.create(quizSetData);
-    return quizSet._id.toString();
+    console.log('Creating quiz set with data:', quizSetData);
+    
+    // Validar datos de entrada
+    if (!quizSetData || !quizSetData.title) {
+      throw new Error('Quiz set title is required');
+    }
+
+    if (!quizSetData.instructor) {
+      throw new Error('Instructor ID is required');
+    }
+
+    // Validar que instructor sea un ObjectId válido
+    if (!mongoose.Types.ObjectId.isValid(quizSetData.instructor)) {
+      throw new Error('Invalid instructor ID format');
+    }
+    
+    const newQuizSet = new Quizset({
+      title: quizSetData.title.trim(),
+      description: quizSetData.description || '',
+      active: quizSetData.active || false,
+      instructor: quizSetData.instructor,
+      quizIds: quizSetData.quizIds || []
+    });
+    
+    const savedQuizSet = await newQuizSet.save();
+    console.log('Quiz set created successfully with ID:', savedQuizSet._id.toString());
+    
+    // Retornar el ID como string
+    return savedQuizSet._id.toString();
   } catch (error) {
     console.error('Error creating quiz set:', error);
     throw new Error(`Failed to create quiz set: ${error instanceof Error ? error.message : 'Unknown error'}`);

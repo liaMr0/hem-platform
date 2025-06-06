@@ -38,15 +38,99 @@ export async function getEnrollmentsByCourse(courseId: string) {
             .populate({
                 path: 'course',
                 model: Course,
-                select: 'title'
+                select: 'title modules',
+                populate: {
+                    path: 'modules',
+                    select: 'title lessonIds',
+                    populate: {
+                        path: 'lessonIds',
+                        select: 'title'
+                    }
+                }
             })
-            .sort({ enrollment_date: -1 }) // Más recientes primero
+            .sort({ enrollment_date: -1 })
             .lean();
 
-        return enrollments.map(enrollment => replaceMongoIdInObject(enrollment));
+        // Enriquecer los datos con información de progreso calculada
+        const enrichedEnrollments = await Promise.all(
+            enrollments.map(async (enrollment) => {
+                // Aquí podrías calcular el progreso real basado en lecciones completadas
+                // Por ahora usamos el progreso almacenado en el enrollment
+                
+                const baseEnrollment = replaceMongoIdInObject(enrollment);
+                
+                // Calcular progreso basado en módulos y lecciones si es necesario
+                const totalLessons = enrollment.course?.modules?.reduce((total, module) => {
+                    return total + (module.lessonIds?.length || 0);
+                }, 0) || 0;
+                
+                return {
+                    ...baseEnrollment,
+                    totalLessons,
+                    // Podrías agregar más campos calculados aquí
+                };
+            })
+        );
+
+        return enrichedEnrollments;
     } catch (error) {
         console.error('Error getting enrollments by course:', error);
         throw new Error(`Failed to get course enrollments: ${error.message}`);
+    }
+}
+
+// Función para obtener estadísticas detalladas de progreso
+export async function getCourseEnrollmentStats(courseId: string) {
+    try {
+        validateObjectId(courseId, 'Course ID');
+        
+        const enrollments = await Enrollment.find({ course: courseId }).lean();
+        
+        const stats = {
+            total: enrollments.length,
+            byStatus: {},
+            progressDistribution: {
+                '0-25': 0,
+                '26-50': 0,
+                '51-75': 0,
+                '76-99': 0,
+                '100': 0
+            },
+            averageProgress: 0,
+            completionRate: 0
+        };
+        
+        if (enrollments.length > 0) {
+            // Calcular estadísticas por estado
+            enrollments.forEach(enrollment => {
+                const status = enrollment.status || 'active';
+                stats.byStatus[status] = (stats.byStatus[status] || 0) + 1;
+                
+                // Distribución de progreso
+                const progress = enrollment.progress || 0;
+                if (progress === 0) stats.progressDistribution['0-25']++;
+                else if (progress <= 25) stats.progressDistribution['0-25']++;
+                else if (progress <= 50) stats.progressDistribution['26-50']++;
+                else if (progress <= 75) stats.progressDistribution['51-75']++;
+                else if (progress < 100) stats.progressDistribution['76-99']++;
+                else stats.progressDistribution['100']++;
+            });
+            
+            // Progreso promedio
+            const totalProgress = enrollments.reduce((sum, enrollment) => 
+                sum + (enrollment.progress || 0), 0);
+            stats.averageProgress = Math.round(totalProgress / enrollments.length);
+            
+            // Tasa de finalización
+            const completedCount = enrollments.filter(enrollment => 
+                enrollment.status === 'completed' || enrollment.progress === 100).length;
+            stats.completionRate = Math.round((completedCount / enrollments.length) * 100);
+        }
+        
+        return stats;
+    } catch (error) {
+        console.error('Error getting course enrollment stats:', error);
+        return null;
     }
 }
 

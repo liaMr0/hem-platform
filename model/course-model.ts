@@ -29,7 +29,7 @@ const courseSchema = new Schema({
         required: true,
         type: String
     },
-    subtitle:{ 
+    subtitle:{
         type: String,
         default: "subtitle",
     },
@@ -37,37 +37,52 @@ const courseSchema = new Schema({
         required: true,
         type: String
     },
-    thumbnail:{        
+    thumbnail:{
         type: String
     },
     // Agregar campo para múltiples documentos
     documents: [documentSchema],
     
-    modules:[{  type: Schema.ObjectId, ref: "Module" }],
-
+    modules:[{
+        type: Schema.ObjectId, 
+        ref: "Module"
+    }],
+    
     active:{
         required: true,
         default: false,
         type: Boolean
-    },  
-    instructor:{  type: Schema.ObjectId, ref: "User" },
-
-    testimonials:[{  type: Schema.ObjectId, ref: "Testimonial" }],
-
-    quizSet:{        
-        type: Schema.ObjectId
     },
+    
+    instructor:{
+        type: Schema.ObjectId, 
+        ref: "User"
+    },
+    
+    testimonials:[{
+        type: Schema.ObjectId, 
+        ref: "Testimonial"
+    }],
+    
+    // ✅ CORRECCIÓN: Agregar referencia al modelo Quizset
+    quizSet:{
+        type: Schema.ObjectId,
+        ref: "Quizset"  // Agregar referencia explícita
+    },
+    
     learning:{
         type: [String]
-    },  
+    },
+    
     createdOn:{
         required: true,
-        default: Date.now(),
+        default: Date.now,  // Quitar () para que no se ejecute inmediatamente
         type: Date
-    },    
+    },
+    
     modifiedOn:{
         required: true,
-        default: Date.now(),
+        default: Date.now,  // Quitar () para que no se ejecute inmediatamente
         type: Date
     },
 });

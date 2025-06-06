@@ -8,7 +8,6 @@ import mongoose from "mongoose";
 import { Assessment } from "@/model/assessment-model";
 import { getLoggedInUser } from "@/lib/loggedin-user";
 import { createAssessmentReport } from "@/queries/reports";
-import { Course } from "@/model/course-model";
 
 // Helper function to check if user can modify quiz
 async function canModifyQuiz(quizSetId: string): Promise<boolean> {
@@ -51,7 +50,7 @@ async function canCreateQuizSet(): Promise<boolean> {
   return ['admin', 'instructor'].includes(loggedInUser.role);
 }
 
-export async function updateQuizSet(quizset, dataToUpdate){
+export async function updateQuizSet(quizset: string, dataToUpdate: any) {
     try {
         const canModify = await canModifyQuiz(quizset);
         
@@ -60,13 +59,15 @@ export async function updateQuizSet(quizset, dataToUpdate){
         }
 
         await Quizset.findByIdAndUpdate(quizset, dataToUpdate);
+        return { success: true };
 
     } catch (error) {
-        throw new Error(error);
+        console.error("Error updating quiz set:", error);
+        throw new Error(error instanceof Error ? error.message : "Error al actualizar el quiz");
     }
 }
 
-export async function addQuizToQuizSet(quizSetId:string, quizData:any){
+export async function addQuizToQuizSet(quizSetId: string, quizData: any) {
     try {
         const canModify = await canModifyQuiz(quizSetId);
         
@@ -74,42 +75,48 @@ export async function addQuizToQuizSet(quizSetId:string, quizData:any){
             throw new Error("No tienes permisos para modificar este quiz");
         }
 
-        //console.log(quizSetId,quizData);
-        const transformedQuizData = {};
-        transformedQuizData["title"] = quizData["title"];
-        transformedQuizData["description"] = quizData["description"];
-        transformedQuizData["slug"] = getSlug(quizData["title"]);
-        transformedQuizData["options"] = [
-            {
-                text: quizData.optionA.label,
-                is_correct: quizData.optionA.isTrue  
-            },
-            {
-                text: quizData.optionB.label,
-                is_correct: quizData.optionB.isTrue  
-            },
-            {
-                text: quizData.optionC.label,
-                is_correct: quizData.optionC.isTrue  
-            },
-            {
-                text: quizData.optionD.label,
-                is_correct: quizData.optionD.isTrue  
-            }, 
-        ];
-        //console.log(transformedQuizData);
+        const transformedQuizData = {
+            title: quizData.title,
+            description: quizData.description,
+            slug: getSlug(quizData.title),
+            options: [
+                {
+                    text: quizData.optionA.label,
+                    is_correct: quizData.optionA.isTrue  
+                },
+                {
+                    text: quizData.optionB.label,
+                    is_correct: quizData.optionB.isTrue  
+                },
+                {
+                    text: quizData.optionC.label,
+                    is_correct: quizData.optionC.isTrue  
+                },
+                {
+                    text: quizData.optionD.label,
+                    is_correct: quizData.optionD.isTrue  
+                }
+            ]
+        };
 
         const createdQuizId = await createQuiz(transformedQuizData);
 
         const quizSet = await Quizset.findById(quizSetId);
+        if (!quizSet) {
+            throw new Error("Quiz set no encontrado");
+        }
+        
         quizSet.quizIds.push(createdQuizId);
-        quizSet.save();
+        await quizSet.save();
+        
+        return { success: true, quizId: createdQuizId };
     } catch (error) {
-        throw new Error(error);
+        console.error("Error adding quiz to quiz set:", error);
+        throw new Error(error instanceof Error ? error.message : "Error al agregar quiz");
     }
 }
 
-export async function deleteQuiz(quizSetId:string, quizId:string) {
+export async function deleteQuiz(quizSetId: string, quizId: string) {
     try {
         const canModify = await canModifyQuiz(quizSetId);
         
@@ -118,17 +125,19 @@ export async function deleteQuiz(quizSetId:string, quizId:string) {
         }
 
         await Quizset.findByIdAndUpdate(quizSetId, {
-            $pull: {quizIds:quizId } 
+            $pull: { quizIds: quizId } 
         });
 
         await Quiz.findByIdAndDelete(quizId);
         
+        return { success: true };
     } catch (error) {
-        throw new Error(error as string);
+        console.error("Error deleting quiz:", error);
+        throw new Error(error instanceof Error ? error.message : "Error al eliminar el quiz");
     }
 }
 
-export async function deleteQuizSet(quizSetId:string) {
+export async function deleteQuizSet(quizSetId: string) {
   try {
     const canModify = await canModifyQuiz(quizSetId);
     
@@ -147,13 +156,15 @@ export async function deleteQuizSet(quizSetId:string) {
 
     // Elimina el quiz set
     await Quizset.findByIdAndDelete(quizSetId);
+    
+    return { success: true };
   } catch (error) {
     console.error("Error eliminando quiz set:", error);
-    throw new Error(error.message || "Error al eliminar el quiz set");
+    throw new Error(error instanceof Error ? error.message : "Error al eliminar el quiz set");
   }
 }
 
-export async function changeQuizPublishState(quizSetId:string) {
+export async function changeQuizPublishState(quizSetId: string) {
     try {
         const canModify = await canModifyQuiz(quizSetId);
         
@@ -162,14 +173,24 @@ export async function changeQuizPublishState(quizSetId:string) {
         }
 
         const quiz = await Quizset.findById(quizSetId);
-        const res = await Quizset.findByIdAndUpdate(quizSetId, {active: !quiz.active},{lean: true});
-        return res.active;
+        if (!quiz) {
+            throw new Error("Quiz no encontrado");
+        }
+        
+        const res = await Quizset.findByIdAndUpdate(
+            quizSetId, 
+            { active: !quiz.active }, 
+            { new: true, lean: true }
+        );
+        
+        return { success: true, active: res?.active };
     } catch (error) {
-        throw new Error(error);
+        console.error("Error changing quiz publish state:", error);
+        throw new Error(error instanceof Error ? error.message : "Error al cambiar el estado del quiz");
     }
 }
 
-export async function doCreateQuizSet(data){
+export async function doCreateQuizSet(data: any) {
     try {
         const canCreate = await canCreateQuizSet();
         
@@ -179,61 +200,154 @@ export async function doCreateQuizSet(data){
 
         // Agregar el instructor ID al crear el quiz set
         const loggedInUser = await getLoggedInUser();
-        data['slug'] = getSlug(data.title);
-        data['instructor'] = loggedInUser.id; // Asegurar que se asigne el instructor
+        if (!loggedInUser) {
+            throw new Error("Usuario no autenticado");
+        }
         
-        const createdQuizSet = await Quizset.create(data);
-        return createdQuizSet?._id.toString();
+        const quizSetData = {
+            ...data,
+            slug: getSlug(data.title),
+            instructor: loggedInUser.id
+        };
+        
+        const createdQuizSet = await Quizset.create(quizSetData);
+        return { success: true, quizSetId: createdQuizSet._id.toString() };
     } catch (error) {
-        throw new Error(error);
+        console.error("Error creating quiz set:", error);
+        throw new Error(error instanceof Error ? error.message : "Error al crear el quiz set");
     }
 }
 
-export async function addQuizAssessment(courseId:string,quizSetId:string,answers:any) {
+// FUNCIÓN MEJORADA: Procesar respuestas del quiz
+export async function addQuizAssessment(courseId: string, quizSetId: string, answers: any[]) {
     try {
-        console.log(quizSetId,answers);
+        console.log('📝 Processing quiz assessment:', { courseId, quizSetId, answersCount: answers.length });
+        
+        // Validar parámetros
+        if (!courseId || !quizSetId || !answers || !Array.isArray(answers)) {
+            throw new Error("Parámetros inválidos para el assessment");
+        }
+
+        // Obtener usuario logueado
+        const loggedInUser = await getLoggedInUser();
+        if (!loggedInUser) {
+            throw new Error("Usuario no autenticado");
+        }
+
+        // Obtener el quiz set con las preguntas
         const quizSet = await getQuizSetById(quizSetId);
+        if (!quizSet || !quizSet.quizIds) {
+            throw new Error("Quiz set no encontrado o sin preguntas");
+        }
+
+        console.log('🎯 Quiz set loaded:', { 
+            title: quizSet.title, 
+            questionsCount: quizSet.quizIds.length 
+        });
+
         const quizzes = replaceMongoIdInArray(quizSet.quizIds);
 
+        // Procesar cada pregunta del quiz
         const assessmentRecord = quizzes.map((quiz) => {
-            const obj = {};
-            obj.quizId = new mongoose.Types.ObjectId(quiz.id);
-            const found = answers.find((a) => a.quizId === quiz.id);
-            if (found) {
-                obj.attempted = true;
-            } else {
-                obj.attempted = false;
-            }
-
-        const mergedOptions = quiz.options.map((o) => {
-            return {
-                option: o.text,
-                isCorrect: o.is_correct, 
-                isSelected: (function () {
-                    const found = answers.find((a) => a.options[0].option === o.text);
-                    if (found) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                })(),
+            const obj: any = {
+                quizId: new mongoose.Types.ObjectId(quiz.id)
             };
-        }); 
-        
-        obj["options"] = mergedOptions;
-        return obj;  
-      });
+            
+            // Verificar si el usuario respondió esta pregunta
+            const userAnswer = answers.find((a) => a.quizId === quiz.id);
+            obj.attempted = !!userAnswer;
 
-      const assessmentEntry = {};
-      assessmentEntry.assessments = assessmentRecord;
-      assessmentEntry.otherMarks = 0;
+            // Procesar las opciones de la pregunta
+            const mergedOptions = quiz.options.map((option: any) => {
+                let isSelected = false;
+                
+                // Verificar si esta opción fue seleccionada por el usuario
+                if (userAnswer && userAnswer.options && userAnswer.options.length > 0) {
+                    isSelected = userAnswer.options.some((selectedOption: any) => 
+                        selectedOption.option === option.text
+                    );
+                }
 
-      const assessment = await Assessment.create(assessmentEntry);
-      const loggedInUser = await getLoggedInUser();
+                return {
+                    option: option.text,
+                    isCorrect: option.is_correct,
+                    isSelected: isSelected,
+                };
+            });
+            
+            obj.options = mergedOptions;
+            return obj;
+        });
 
-      await createAssessmentReport({ courseId:courseId, userId:loggedInUser.id, quizAssessment: assessment?._id }); 
+        console.log('📊 Assessment record created:', { 
+            questionsProcessed: assessmentRecord.length,
+            attemptedQuestions: assessmentRecord.filter(r => r.attempted).length
+        });
+
+        // Crear el assessment
+        const assessmentEntry = {
+            assessments: assessmentRecord,
+            otherMarks: 0
+        };
+
+        const assessment = await Assessment.create(assessmentEntry);
+        console.log('✅ Assessment created:', assessment._id);
+
+        // Crear el reporte de assessment
+        await createAssessmentReport({ 
+            courseId: courseId, 
+            userId: loggedInUser.id, 
+            quizAssessment: assessment._id 
+        });
+
+        console.log('✅ Assessment report created successfully');
+
+        return {
+            success: true,
+            assessmentId: assessment._id.toString(),
+            totalQuestions: quizzes.length,
+            attemptedQuestions: assessmentRecord.filter(r => r.attempted).length
+        };
 
     } catch (error) {
-        throw new Error(error);
+        console.error('❌ Error in addQuizAssessment:', error);
+        throw new Error(error instanceof Error ? error.message : "Error al procesar el quiz");
+    }
+}
+
+// NUEVA FUNCIÓN: Obtener resultados del quiz para un usuario
+export async function getQuizResults(courseId: string, userId: string) {
+    try {
+        const { getReport } = await import('@/queries/reports');
+        const report = await getReport({ course: courseId, student: userId });
+        
+        if (!report || !report.quizAssessment) {
+            return null;
+        }
+
+        const assessment = await Assessment.findById(report.quizAssessment).lean();
+        if (!assessment) {
+            return null;
+        }
+
+        const totalQuestions = assessment.assessments.length;
+        const attemptedQuestions = assessment.assessments.filter((q: any) => q.attempted).length;
+        const correctAnswers = assessment.assessments.filter((q: any) => 
+            q.attempted && q.options.some((opt: any) => opt.isSelected && opt.isCorrect)
+        ).length;
+
+        return {
+            totalQuestions,
+            attemptedQuestions,
+            correctAnswers,
+            score: totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0,
+            totalMarks: totalQuestions * 5,
+            obtainedMarks: correctAnswers * 5,
+            assessmentDate: report.completion_date || report.created_at
+        };
+
+    } catch (error) {
+        console.error('Error getting quiz results:', error);
+        return null;
     }
 }

@@ -84,20 +84,7 @@ export async function createCourse(data: Partial<CourseData>): Promise<CourseDat
         throw new Error(e as string);
     }
 }
- 
-export async function updateCourse(courseId: string, dataToUpdate): Promise<void> {
-    try {
-        const canModify = await canModifyCourse(courseId);
-        
-        if (!canModify) {
-            throw new Error("No tienes permisos para modificar este curso");
-        }
 
-        await Course.findByIdAndUpdate(courseId, dataToUpdate);
-    } catch (e) {
-        throw new Error(e as string);
-    }
-}
 
 export async function changeCoursePublishState(courseId: string): Promise<boolean> {
     try {
@@ -190,7 +177,9 @@ export async function deleteCourse(courseId: string): Promise<void> {
     }
 }
 
-export async function updateQuizSetForCourse(courseId: string, dataUpdated: QuizSetUpdate): Promise<void> {
+// En tu archivo de actions/course.js o similar
+
+export async function updateQuizSetForCourse(courseId: string, data: { quizSetId: string }): Promise<void> {
     try {
         const canModify = await canModifyCourse(courseId);
         
@@ -198,11 +187,46 @@ export async function updateQuizSetForCourse(courseId: string, dataUpdated: Quiz
             throw new Error("No tienes permisos para modificar este curso");
         }
 
-        const data: Partial<CourseData> = {};
-        data["quizSet"] = new mongoose.Types.ObjectId(dataUpdated.quizSetId);
+        // Validar que el quizSetId existe si no está vacío
+        if (data.quizSetId && data.quizSetId.trim() !== "") {
+            // Verificar que el QuizSet existe
+            const quizSetExists = await Quizset.findById(data.quizSetId).lean();
+            if (!quizSetExists) {
+                throw new Error("El conjunto de preguntas seleccionado no existe");
+            }
+        }
+
+        // Preparar los datos para actualizar
+        const updateData = {
+            quizSet: data.quizSetId && data.quizSetId.trim() !== "" ? data.quizSetId : null,
+            modifiedOn: new Date()
+        };
+
+        await Course.findByIdAndUpdate(courseId, updateData);
+    } catch (e) {
+        console.error('Error updating quiz set for course:', e);
+        throw new Error(e.message || 'Error al actualizar el conjunto de preguntas');
+    }
+}
+
+// También actualiza tu función existente updateCourse para manejar mejor los errores
+export async function updateCourse(courseId: string, dataToUpdate: any): Promise<void> {
+    try {
+        const canModify = await canModifyCourse(courseId);
         
-        await Course.findByIdAndUpdate(courseId, data);
-    } catch (error) {
-        throw new Error(error as string);
+        if (!canModify) {
+            throw new Error("No tienes permisos para modificar este curso");
+        }
+
+        // Agregar timestamp de modificación
+        const updateData = {
+            ...dataToUpdate,
+            modifiedOn: new Date()
+        };
+
+        await Course.findByIdAndUpdate(courseId, updateData);
+    } catch (e) {
+        console.error('Error updating course:', e);
+        throw new Error(e.message || 'Error al actualizar el curso');
     }
 }

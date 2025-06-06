@@ -1,5 +1,5 @@
-
 "use client"
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -26,23 +26,90 @@ interface QuizProps {
 const Quiz = ({ courseId, quizSet, isTaken }: QuizProps) => {
   const [open, setOpen] = useState(false);
 
-  // ✅ SOLUCIÓN: Verificar que quizIds existe y es un array antes de usar map
-  const quizzes = (quizSet?.quizIds || []).map((quiz) => {
+  console.log("🎯 Quiz Component Received:", {
+    courseId,
+    quizSetId: quizSet?._id,
+    quizSetTitle: quizSet?.title,
+    quizIds: quizSet?.quizIds,
+    quizCount: quizSet?.quizIds?.length || 0,
+    isTaken
+  });
+
+  // ✅ CORRECCIÓN: Verificación más robusta y logging detallado
+  if (!quizSet) {
+    console.error("❌ No quizSet provided to Quiz component");
+    return null;
+  }
+
+  if (!quizSet.quizIds || !Array.isArray(quizSet.quizIds) || quizSet.quizIds.length === 0) {
+    console.warn("⚠️ QuizSet has no quizIds or empty array:", quizSet.quizIds);
+    return (
+      <div className="max-w-[270px] bg-white border border-border rounded-md dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+        <div className="flex h-32 items-center justify-center bg-gradient-to-r from-sky-500 to-indigo-500 px-6 text-center">
+          <span className="text-lg font-semibold text-white">
+            {quizSet?.title || "Quiz Sin Título"}
+          </span>
+        </div>
+        <div className="p-4">
+          <p className="mb-4 font-normal text-gray-500 dark:text-gray-400 text-sm">
+            No hay preguntas disponibles para este quiz.
+          </p>
+          <Button
+            className="flex gap-2 capitalize border-gray-300 text-gray-500 w-full"
+            variant="outline"
+            disabled={true}
+          >
+            <span>Quiz no disponible</span>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ CORRECCIÓN: Transformación más segura de los datos
+  const quizzes = quizSet.quizIds.map((quiz, index) => {
+    console.log(`🔍 Processing quiz ${index + 1}:`, {
+      id: quiz._id,
+      title: quiz.title,
+      description: quiz.description,
+      optionsCount: quiz.options?.length || 0,
+      options: quiz.options
+    });
+
+    if (!quiz._id || !quiz.title) {
+      console.warn(`⚠️ Quiz ${index + 1} missing required fields:`, quiz);
+      return null;
+    }
+
     return {
       id: quiz._id.toString(),
       title: quiz.title,
-      description: quiz.description,
-      options: (quiz.options || []).map((option) => {
-        return {
-          label: option.text,
-          isTrue: option.is_correct
+      description: quiz.description || "",
+      options: (quiz.options || []).map((option, optIndex) => {
+        if (!option.text) {
+          console.warn(`⚠️ Option ${optIndex + 1} in quiz ${quiz.title} missing text:`, option);
         }
-      })
-    }
-  });
+        return {
+          label: option.text || "",
+          isTrue: Boolean(option.is_correct)
+        };
+      }).filter(opt => opt.label) // Solo opciones con texto
+    };
+  }).filter(Boolean); // Remover quizzes inválidos
+
+  console.log("✅ Final processed quizzes:", quizzes);
 
   // Calcular total de puntos de forma segura
-  const totalMarks = quizSet?.quizIds ? quizSet.quizIds.length * 5 : 0;
+  const totalMarks = quizzes.length * 5;
+
+  const handleQuizClick = () => {
+    console.log("🚀 Opening quiz modal with:", {
+      quizzesCount: quizzes.length,
+      courseId,
+      quizSetId: quizSet._id
+    });
+    setOpen(true);
+  };
 
   return (
     <>
@@ -65,8 +132,8 @@ const Quiz = ({ courseId, quizSet, isTaken }: QuizProps) => {
           <Button
             className="flex gap-2 capitalize border-sky-500 text-sky-500 hover:text-sky-500 hover:bg-sky-500/5 w-full"
             variant="outline"
-            onClick={() => setOpen(true)}
-            disabled={!quizSet?.quizIds || quizSet.quizIds.length === 0}
+            onClick={handleQuizClick}
+            disabled={quizzes.length === 0}
           >
             <svg
               stroke="currentColor"
@@ -86,18 +153,16 @@ const Quiz = ({ courseId, quizSet, isTaken }: QuizProps) => {
         </div>
       </div>
 
-      {quizzes.length > 0 && (
-        <QuizModal 
-          quizzes={quizzes} 
-          courseId={courseId} 
-          quizSetId={quizSet._id.toString()} 
-          open={open} 
-          setOpen={setOpen} 
-        />
-      )}
+      {/* ✅ CORRECCIÓN: Renderizar modal independientemente del estado open */}
+      <QuizModal 
+        quizzes={quizzes}
+        courseId={courseId}
+        quizSetId={quizSet._id.toString()}
+        open={open}
+        setOpen={setOpen}
+      />
     </>
   );
 };
 
 export default Quiz;
-

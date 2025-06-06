@@ -39,19 +39,37 @@ const EditCourse = async ({ params }: PageProps) => {
       throw new Error("Course not found");
     }
 
-    // Sanitize function para manejar ObjectID y Buffer
-    function sanitizeData(data: any) {
-      return JSON.parse(
-        JSON.stringify(data, (key, value) => {
-          if (value instanceof ObjectId) {
-            return value.toString();
-          }
-          if (Buffer.isBuffer(value)) {
-            return value.toString("base64");
-          }
-          return value;
-        })
-      );
+    // ✅ Función mejorada de sanitización para Next.js 15
+    function sanitizeData(data: any): any {
+      if (data === null || data === undefined) {
+        return data;
+      }
+      
+      if (Array.isArray(data)) {
+        return data.map(item => sanitizeData(item));
+      }
+      
+      if (typeof data === 'object') {
+        if (data instanceof Date) {
+          return data.toISOString();
+        }
+        
+        if (data.constructor && data.constructor.name === 'ObjectId') {
+          return data.toString();
+        }
+        
+        if (Buffer.isBuffer(data)) {
+          return data.toString('base64');
+        }
+        
+        const sanitizedObj: any = {};
+        for (const [key, value] of Object.entries(data)) {
+          sanitizedObj[key] = sanitizeData(value);
+        }
+        return sanitizedObj;
+      }
+      
+      return data;
     }
 
     const rawmodules = await replaceMongoIdInArray(course?.modules || []).sort((a: any, b: any) => a.order - b.order);
@@ -70,6 +88,28 @@ const EditCourse = async ({ params }: PageProps) => {
         };
       });
     }
+
+    // ✅ Sanitizar y obtener el quizSet actual del curso
+    const currentQuizSet = course?.quizSet ? sanitizeData(course.quizSet) : null;
+    let currentQuizSetId = null;
+    
+    if (currentQuizSet) {
+      // Extraer el ID del quizSet, manejando diferentes formatos
+      if (typeof currentQuizSet === 'string') {
+        currentQuizSetId = currentQuizSet;
+      } else if (currentQuizSet._id) {
+        currentQuizSetId = currentQuizSet._id.toString();
+      } else if (currentQuizSet.id) {
+        currentQuizSetId = currentQuizSet.id.toString();
+      }
+    }
+
+    console.log('Debug QuizSet Info:', {
+      currentQuizSet,
+      currentQuizSetId,
+      mappedQuizSet,
+      courseQuizSet: course.quizSet
+    });
 
     return (
       <>
@@ -150,7 +190,9 @@ const EditCourse = async ({ params }: PageProps) => {
               {/* Sección de Quiz */}
               <div>
                 <QuizSetForm
-                  initialData={{ quizSetId: course?.quizSet?._id?.toString() }}
+                  initialData={{ 
+                    quizSetId: currentQuizSetId || "" 
+                  }}
                   courseId={courseId}
                   options={mappedQuizSet}
                 />

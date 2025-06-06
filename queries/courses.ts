@@ -3,6 +3,8 @@ import { Course } from "@/model/course-model";
 import { Module } from "@/model/module.model";
 import { Testimonial } from "@/model/testimonial-model";
 import { User } from "@/model/user-model";
+import { Quizset } from "@/model/quizset-model";
+import { Quiz } from "@/model/quizzes-model";
 import { replaceMongoIdInArray, replaceMongoIdInObject } from "@/lib/convertData";
 import { getEnrollmentsForCourse } from "./enrollments";
 import { getTestimonialsForCourse } from "./testimonials";
@@ -10,8 +12,6 @@ import { Lesson } from "@/model/lesson.model";
 import mongoose from "mongoose";
 import { Enrollment } from "@/model/enrollment-model";
 
-
-// queries/courses.ts - Función getCourseDetails actualizada
 export async function getCourseDetails(courseId: string) {
     try {
         // Validar que courseId existe y es válido
@@ -49,7 +49,7 @@ export async function getCourseDetails(courseId: string) {
                 "quizSet",
                 "active",
                 "learning",
-                "documents", // Agregar documentos a la selección
+                "documents",
                 "createdOn",
                 "modifiedOn"
             ])
@@ -73,6 +73,17 @@ export async function getCourseDetails(courseId: string) {
                     model: User
                 }
             })
+            // ✅ CORRECCIÓN: Poblar quizSet con select específico para evitar problemas de serialización
+            .populate({
+                path: "quizSet",
+                model: Quizset,
+                select: "title description active instructor createdOn modifiedOn",
+                populate: {
+                    path: "quizIds",
+                    model: Quiz,
+                    select: "title description slug explanations options mark"
+                }
+            })
             .lean();
 
         if (!course) {
@@ -80,19 +91,35 @@ export async function getCourseDetails(courseId: string) {
             return null;
         }
 
-        return replaceMongoIdInObject(course);
+        // ✅ Serialización mejorada para Next.js 15
+        const serializedCourse = JSON.parse(JSON.stringify(course, (key, value) => {
+            // Convertir ObjectId a string
+            if (value && typeof value === 'object' && value.constructor && value.constructor.name === 'ObjectId') {
+                return value.toString();
+            }
+            // Convertir Buffer a string base64
+            if (Buffer.isBuffer(value)) {
+                return value.toString('base64');
+            }
+            // Convertir Date a ISO string
+            if (value instanceof Date) {
+                return value.toISOString();
+            }
+            return value;
+        }));
+
+        return replaceMongoIdInObject(serializedCourse);
     } catch (error) {
         console.error('Error in getCourseDetails:', error);
         throw new Error(`Failed to get course details: ${error.message}`);
     }
 }
 
-// También actualizar getDashboardCourses para incluir conteo de documentos
+// También actualizar getDashboardCourses para incluir quizSet
 export async function getDashboardCourses(instructorId?: string) {
     try {
         let query = {};
         
-        // Si se proporciona instructorId, filtrar solo cursos de ese instructor
         if (instructorId) {
             if (!mongoose.Types.ObjectId.isValid(instructorId)) {
                 throw new Error('Invalid instructor ID format');
@@ -110,7 +137,8 @@ export async function getDashboardCourses(instructorId?: string) {
                 "instructor",
                 "active",
                 "price",
-                "documents", // Incluir documentos para mostrar conteo
+                "documents",
+                "quizSet", // ✅ Incluir quizSet
                 "createdOn",
                 "modifiedOn"
             ])
@@ -127,6 +155,16 @@ export async function getDashboardCourses(instructorId?: string) {
                 path: "modules",
                 model: Module,
                 select: "title"
+            })
+            .populate({
+                path: "quizSet",
+                model: Quizset,
+                select: "title active",
+                populate: {
+                    path: "quizIds",
+                    model: Quiz,
+                    select: "title"
+                }
             })
             .sort({ createdOn: -1 })
             .lean();
@@ -159,7 +197,6 @@ export async function getCourseDetailsByInstructor(instructorId: string, expand?
 
     const courseIds = courses.map(course => course._id);
     
-    // Obtener enrollments con información del estudiante poblada
     const enrollments = await Enrollment.find({ 
       course: { $in: courseIds } 
     })
@@ -208,7 +245,6 @@ export async function create(courseData: any) {
 
 export async function getRelatedCourses(currentCourseId: string, categoryId: string) {
     try {
-        // Validar que los IDs sean válidos
         if (!mongoose.Types.ObjectId.isValid(currentCourseId) || 
             !mongoose.Types.ObjectId.isValid(categoryId)) {
             console.error("Invalid IDs provided:", { currentCourseId, categoryId });
@@ -243,6 +279,7 @@ export async function getCourseList() {
                 "thumbnail",
                 "modules",
                 "instructor",
+                "quizSet", // ✅ Incluir quizSet
                 "createdOn"
             ])
             .populate({
@@ -270,6 +307,16 @@ export async function getCourseList() {
                     select: "title duration"
                 }
             })
+            .populate({
+                path: "quizSet",
+                model: Quizset,
+                select: "title active",
+                populate: {
+                    path: "quizIds",
+                    model: Quiz,
+                    select: "title options"
+                }
+            })
             .sort({ createdOn: -1 })
             .lean();
         
@@ -280,8 +327,6 @@ export async function getCourseList() {
     }
 }
 
-
-// Función para buscar cursos con filtros avanzados
 export async function searchCourses(searchParams: {
     search?: string;
     instructor?: string;
@@ -290,7 +335,6 @@ export async function searchCourses(searchParams: {
     try {
         let query: any = { active: true };
         
-        // Filtro de búsqueda por texto
         if (searchParams.search) {
             query.$or = [
                 { title: { $regex: searchParams.search, $options: 'i' } },
@@ -299,15 +343,13 @@ export async function searchCourses(searchParams: {
             ];
         }
         
-        // Filtro por instructor
         if (searchParams.instructor) {
             if (mongoose.Types.ObjectId.isValid(searchParams.instructor)) {
                 query.instructor = searchParams.instructor;
             }
         }
         
-        // Configurar ordenamiento
-        let sortOption: any = { createdOn: -1 }; // Por defecto más nuevos
+        let sortOption: any = { createdOn: -1 };
         
         switch (searchParams.sortBy) {
             case 'oldest':
@@ -330,6 +372,7 @@ export async function searchCourses(searchParams: {
                 "thumbnail", 
                 "modules",
                 "instructor",
+                "quizSet",
                 "createdOn"
             ])
             .populate({
@@ -357,6 +400,16 @@ export async function searchCourses(searchParams: {
                     select: "title duration"
                 }
             })
+            .populate({
+                path: "quizSet",
+                model: Quizset,
+                select: "title active",
+                populate: {
+                    path: "quizIds",
+                    model: Quiz,
+                    select: "title options"
+                }
+            })
             .sort(sortOption)
             .lean();
             
@@ -367,8 +420,6 @@ export async function searchCourses(searchParams: {
     }
 }
 
-
-// Función para obtener estadísticas de progreso de un curso
 export async function getCourseProgressStats(courseId: string, studentId: string) {
     try {
         if (!mongoose.Types.ObjectId.isValid(courseId) || !mongoose.Types.ObjectId.isValid(studentId)) {
@@ -380,7 +431,6 @@ export async function getCourseProgressStats(courseId: string, studentId: string
             return null;
         }
 
-        // Obtener reporte del estudiante
         const { getReport } = await import('./reports');
         const report = await getReport({ course: courseId, student: studentId });
         
@@ -399,7 +449,6 @@ export async function getCourseProgressStats(courseId: string, studentId: string
         const totalModules = course.modules?.length || 0;
         const completedModules = report.totalCompletedModeules?.length || 0;
         
-        // Calcular total de lecciones
         const totalLessons = course.modules?.reduce((acc, module) => {
             return acc + (module.lessonIds?.length || 0);
         }, 0) || 0;

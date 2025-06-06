@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import Image from "next/image";
-import Link from "next/link";
 import { updateUserInfo } from '@/app/actions/account';
 import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 interface UserInfo {
     firstName: string;
@@ -22,6 +22,9 @@ interface PersonalDetailsProps {
 }
 
 const PersonalDetails: React.FC<PersonalDetailsProps> = ({ userInfo }) => {
+    const { data: session, update } = useSession();
+    const router = useRouter();
+    
     const [infoState, setInfoState] = useState({
         firstName: userInfo?.firstName || '',
         lastName: userInfo?.lastName || '',
@@ -46,6 +49,26 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({ userInfo }) => {
         
         try {
             await updateUserInfo(userInfo?.email, infoState);
+            
+            // Actualizar la sesión de NextAuth con los nuevos datos
+            await update({
+                ...session,
+                user: {
+                    ...session?.user,
+                    name: `${infoState.firstName} ${infoState.lastName}`,
+                    firstName: infoState.firstName,
+                    lastName: infoState.lastName,
+                    designation: infoState.designation,
+                    bio: infoState.bio
+                }
+            });
+
+            // Forzar revalidación de la página
+            router.refresh();
+            
+            // Disparar evento personalizado para que el sidebar se actualice
+            window.dispatchEvent(new CustomEvent('userUpdated'));
+            
             toast.success("Datos del usuario actualizados correctamente.");
         } catch (error) {
             toast.error(`Error: ${(error as Error).message}`);
